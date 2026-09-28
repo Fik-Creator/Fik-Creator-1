@@ -53,8 +53,6 @@ body:before{content:"";position:fixed;inset:0;pointer-events:none;background:rad
 </style>
 </head>
 <body>
-<div id="loading" class="loading"><div class="loadingInner"><div class="mark"><img src="assets/multiwork-mark.svg" alt="MULTIWORK AI"></div><p>Opening your executive workspace…</p></div></div>
-
 <section id="authScreen" class="screen auth hidden">
   <div class="authBrand"><div class="logo"><div class="mark"><img src="assets/multiwork-mark.svg" alt="MULTIWORK AI"></div><b>MULTIWORK AI</b></div><div class="brandCopy"><div class="eyebrow">Executive operating system</div><h1>Your day.<br><span>Under control.</span></h1><p>MULTIWORK AI brings your priorities, people, work and schedule into one private command center — customized around the way you operate.</p><div class="pricingStrip">
   <div class="priceCard"><div class="priceLabel">Basic</div><h3>Free</h3><div class="price">₦0 <small>forever</small></div><p>Core tasks, people and a lightweight AI workspace.</p></div>
@@ -86,7 +84,7 @@ body:before{content:"";position:fixed;inset:0;pointer-events:none;background:rad
   </div></div>
 </section>
 
-<section id="appScreen" class="screen hidden">
+<section id="appScreen" class="screen">
 <div class="app">
 <aside class="sidebar"><div class="brand"><div class="mark"><img src="assets/multiwork-mark.svg" alt="MULTIWORK AI"></div><b>MULTIWORK AI</b></div><nav class="nav">
 <button class="active" data-view="today"><span class="ico"><svg class="navIcon" viewBox="0 0 24 24" aria-hidden="true"><path d="m4 10 8-6 8 6v9a1 1 0 0 1-1 1h-5v-6H10v6H5a1 1 0 0 1-1-1z"/></svg></span><span>Home</span></button>
@@ -157,16 +155,7 @@ let supabase=createClient(SUPABASE_URL,SUPABASE_KEY,{auth:{persistSession:true,a
 
 const $=s=>document.querySelector(s), $=s=>document.querySelectorAll(s);
 
-// Executive startup SLA: the loading layer can never remain on screen beyond 2 seconds; the failsafe fires at 1.8 seconds.
-window.__multiworkStartupTimer=setTimeout(()=>{
-  const loading=document.querySelector("#loading");
-  if(loading&&!loading.classList.contains("hidden")){
-    loading.classList.add("hidden");
-    if(document.querySelector("#authScreen")?.classList.contains("hidden")&&document.querySelector("#appScreen")?.classList.contains("hidden")){
-      document.querySelector("#authScreen")?.classList.remove("hidden");
-    }
-  }
-},1800);
+// No startup overlay: the executive shell renders immediately; data hydrates in the background.
 const state={user:null,profile:null,tasks:[],events:[],contacts:[],external:[],notes:[],integrations:[],googleToken:null,googleRefreshToken:null,googleConnected:false,voiceListening:false,wakeListening:false,wakeEnabled:localStorage.getItem("multiwork_wake_word")==="1",view:"today"};
 
 function toast(title,msg){const t=$("#toast");t.innerHTML="<b>"+escapeHtml(title)+"</b>"+escapeHtml(msg);t.classList.add("show");clearTimeout(window.__toast);window.__toast=setTimeout(()=>t.classList.remove("show"),3800)}
@@ -186,7 +175,7 @@ function showAuth(mode="signin"){
   $("#authPassword").autocomplete=signup?"new-password":"current-password";setMessage("","");
 }
 function showApp(){ $("#authScreen").classList.add("hidden");$("#appScreen").classList.remove("hidden") }
-function hideLoading(){ $("#loading").classList.add("hidden") }
+function hideLoading(){}
 function withTimeout(promise, ms=12000){
   return Promise.race([
     promise,
@@ -194,46 +183,29 @@ function withTimeout(promise, ms=12000){
   ]);
 }
 async function initAuth(){
+  // Never block the executive shell on network/database hydration.
+  showApp();
+  renderAll();
+  hideLoading();
+  const sessionPromise=withTimeout(supabase.auth.getSession(),1800);
   try{
-    const {data:{session}}=await withTimeout(supabase.auth.getSession(),1800);
+    const {data:{session}}=await sessionPromise;
     captureProviderToken(session);
     if(session?.user){
       state.user={id:session.user.id,email:session.user.email||"",name:session.user.user_metadata?.full_name||session.user.email?.split("@")[0]||"Executive"};
       showApp();
       renderAll();
-      hideLoading();
-      // Hydrate the workspace after the executive shell is already usable.
       withTimeout(loadWorkspace(),12000).catch(err=>{
         console.error("MULTIWORK workspace load:",err);
-        toast("Workspace still syncing",err.message||"Some data will appear shortly.");
+        toast("Workspace syncing",err.message||"Some data will appear shortly.");
       });
     }else{
       showAuth("signin");
-      hideLoading();
     }
   }catch(err){
     console.error("MULTIWORK auth initialization:",err);
     showAuth("signin");
-    hideLoading();
-    setMessage("error","MULTIWORK AI could not connect to your workspace. Check your connection and refresh.");
   }
-  supabase.auth.onAuthStateChange(async(event,session)=>{
-    captureProviderToken(session);
-    if(event==="SIGNED_IN"&&session?.user){
-      state.user={id:session.user.id,email:session.user.email||"",name:session.user.user_metadata?.full_name||session.user.email?.split("@")[0]||"Executive"};
-      showApp();
-      renderAll();
-      hideLoading();
-      withTimeout(loadWorkspace(),12000).catch(err=>{
-        console.error(err);
-        toast("Workspace still syncing",err.message||"Could not load all workspace data yet.");
-      });
-    }else if(event==="SIGNED_OUT"){
-      state.user=null;state.profile=null;state.tasks=[];state.events=[];state.contacts=[];state.external=[];state.notes=[];state.integrations=[];state.googleToken=null;state.googleRefreshToken=null;state.googleConnected=false;state.voiceListening=false;
-      showAuth("signin");
-      hideLoading();
-    }
-  });
   if("serviceWorker" in navigator) navigator.serviceWorker.register("/sw.js").catch(()=>{});
 }
 
