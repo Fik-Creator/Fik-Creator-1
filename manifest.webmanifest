@@ -2,9 +2,12 @@
   "name":"MULTIWORK AI",
   "short_name":"MULTIWORK",
   "start_url":"/",
+  "scope":"/",
   "display":"standalone",
   "background_color":"#07101f",
   "theme_color":"#07101f",
   "description":"Executive operating system for work, priorities, people and decisions.",
-  "icons":[]
+  "icons":[
+    {"src":"/assets/multiwork-mark.svg","sizes":"any","type":"image/svg+xml","purpose":"any maskable"}
+  ]
 }
