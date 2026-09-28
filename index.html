@@ -53,7 +53,7 @@ body:before{content:"";position:fixed;inset:0;pointer-events:none;background:rad
 </style>
 </head>
 <body>
-<div id="loading" class="loading"><div class="loadingInner"><div class="mark"><img src="assets/multiwork-mark.svg" alt="MULTIWORK AI"></div><p>Preparing your executive workspace…</p></div></div>
+<div id="loading" class="loading"><div class="loadingInner"><div class="mark"><img src="assets/multiwork-mark.svg" alt="MULTIWORK AI"></div><p>Opening your executive workspace…</p></div></div>
 
 <section id="authScreen" class="screen auth hidden">
   <div class="authBrand"><div class="logo"><div class="mark"><img src="assets/multiwork-mark.svg" alt="MULTIWORK AI"></div><b>MULTIWORK AI</b></div><div class="brandCopy"><div class="eyebrow">Executive operating system</div><h1>Your day.<br><span>Under control.</span></h1><p>MULTIWORK AI brings your priorities, people, work and schedule into one private command center — customized around the way you operate.</p><div class="pricingStrip">
@@ -155,7 +155,18 @@ const SUPABASE_URL="https://cjsiwwbqbmviucpezglt.supabase.co";
 const SUPABASE_KEY="sb_publishable_lFUwGLc3b7qJ1U7rKomv1g_LKM7AQzp";
 let supabase=createClient(SUPABASE_URL,SUPABASE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
 
-const $=s=>document.querySelector(s), $$=s=>document.querySelectorAll(s);
+const $=s=>document.querySelector(s), $=s=>document.querySelectorAll(s);
+
+// Executive startup SLA: the loading layer can never remain on screen beyond 4.5 seconds.
+window.__multiworkStartupTimer=setTimeout(()=>{
+  const loading=document.querySelector("#loading");
+  if(loading&&!loading.classList.contains("hidden")){
+    loading.classList.add("hidden");
+    if(document.querySelector("#authScreen")?.classList.contains("hidden")&&document.querySelector("#appScreen")?.classList.contains("hidden")){
+      document.querySelector("#authScreen")?.classList.remove("hidden");
+    }
+  }
+},4500);
 const state={user:null,profile:null,tasks:[],events:[],contacts:[],external:[],notes:[],integrations:[],googleToken:null,googleRefreshToken:null,googleConnected:false,voiceListening:false,wakeListening:false,wakeEnabled:localStorage.getItem("multiwork_wake_word")==="1",view:"today"};
 
 function toast(title,msg){const t=$("#toast");t.innerHTML="<b>"+escapeHtml(title)+"</b>"+escapeHtml(msg);t.classList.add("show");clearTimeout(window.__toast);window.__toast=setTimeout(()=>t.classList.remove("show"),3800)}
@@ -184,35 +195,43 @@ function withTimeout(promise, ms=12000){
 }
 async function initAuth(){
   try{
-    const {data:{session}}=await withTimeout(supabase.auth.getSession(),8000);
+    const {data:{session}}=await withTimeout(supabase.auth.getSession(),4500);
     captureProviderToken(session);
     if(session?.user){
       state.user={id:session.user.id,email:session.user.email||"",name:session.user.user_metadata?.full_name||session.user.email?.split("@")[0]||"Executive"};
       showApp();
-      try{await withTimeout(loadWorkspace(),12000);}
-      catch(err){
+      renderAll();
+      hideLoading();
+      // Hydrate the workspace after the executive shell is already usable.
+      withTimeout(loadWorkspace(),12000).catch(err=>{
         console.error("MULTIWORK workspace load:",err);
-        toast("Workspace needs attention",err.message||"Some workspace data could not be loaded yet.");
-        renderAll();
-      }
-    }else showAuth("signin");
+        toast("Workspace still syncing",err.message||"Some data will appear shortly.");
+      });
+    }else{
+      showAuth("signin");
+      hideLoading();
+    }
   }catch(err){
     console.error("MULTIWORK auth initialization:",err);
     showAuth("signin");
-    setMessage("error","MULTIWORK AI could not connect to your workspace. Check your connection and refresh.");
-  }finally{
     hideLoading();
+    setMessage("error","MULTIWORK AI could not connect to your workspace. Check your connection and refresh.");
   }
   supabase.auth.onAuthStateChange(async(event,session)=>{
     captureProviderToken(session);
     if(event==="SIGNED_IN"&&session?.user){
       state.user={id:session.user.id,email:session.user.email||"",name:session.user.user_metadata?.full_name||session.user.email?.split("@")[0]||"Executive"};
       showApp();
-      try{await withTimeout(loadWorkspace(),12000)}
-      catch(err){console.error(err);toast("Workspace error",err.message||"Could not load workspace data.");renderAll();}
+      renderAll();
+      hideLoading();
+      withTimeout(loadWorkspace(),12000).catch(err=>{
+        console.error(err);
+        toast("Workspace still syncing",err.message||"Could not load all workspace data yet.");
+      });
     }else if(event==="SIGNED_OUT"){
       state.user=null;state.profile=null;state.tasks=[];state.events=[];state.contacts=[];state.external=[];state.notes=[];state.integrations=[];state.googleToken=null;state.googleRefreshToken=null;state.googleConnected=false;state.voiceListening=false;
       showAuth("signin");
+      hideLoading();
     }
   });
   if("serviceWorker" in navigator) navigator.serviceWorker.register("/sw.js").catch(()=>{});
