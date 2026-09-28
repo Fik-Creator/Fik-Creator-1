@@ -157,7 +157,7 @@ let supabase=createClient(SUPABASE_URL,SUPABASE_KEY,{auth:{persistSession:true,a
 
 const $=s=>document.querySelector(s), $=s=>document.querySelectorAll(s);
 
-// Executive startup SLA: the loading layer can never remain on screen beyond 4.5 seconds.
+// Executive startup SLA: the loading layer can never remain on screen beyond 2 seconds; the failsafe fires at 1.8 seconds.
 window.__multiworkStartupTimer=setTimeout(()=>{
   const loading=document.querySelector("#loading");
   if(loading&&!loading.classList.contains("hidden")){
@@ -166,7 +166,7 @@ window.__multiworkStartupTimer=setTimeout(()=>{
       document.querySelector("#authScreen")?.classList.remove("hidden");
     }
   }
-},4500);
+},1800);
 const state={user:null,profile:null,tasks:[],events:[],contacts:[],external:[],notes:[],integrations:[],googleToken:null,googleRefreshToken:null,googleConnected:false,voiceListening:false,wakeListening:false,wakeEnabled:localStorage.getItem("multiwork_wake_word")==="1",view:"today"};
 
 function toast(title,msg){const t=$("#toast");t.innerHTML="<b>"+escapeHtml(title)+"</b>"+escapeHtml(msg);t.classList.add("show");clearTimeout(window.__toast);window.__toast=setTimeout(()=>t.classList.remove("show"),3800)}
@@ -195,7 +195,7 @@ function withTimeout(promise, ms=12000){
 }
 async function initAuth(){
   try{
-    const {data:{session}}=await withTimeout(supabase.auth.getSession(),4500);
+    const {data:{session}}=await withTimeout(supabase.auth.getSession(),1800);
     captureProviderToken(session);
     if(session?.user){
       state.user={id:session.user.id,email:session.user.email||"",name:session.user.user_metadata?.full_name||session.user.email?.split("@")[0]||"Executive"};
