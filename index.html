@@ -40,7 +40,17 @@ body:before{content:"";position:fixed;inset:0;pointer-events:none;background:rad
 @media(max-width:760px){.pricingStrip{grid-template-columns:1fr}.priceCard.featured{order:-1}}
 
 /* MULTIWORK AI brand refinement */
-.logo b{letter-spacing:.04em}.logo b::after{content:""}.mark{background:linear-gradient(135deg,#16b9ff,#3678ff 48%,#9a4dff)!important}.authBrand{background:radial-gradient(circle at 78% 18%,rgba(154,77,255,.14),transparent 25%),linear-gradient(145deg,#070b16,#0b1220)}.brandCopy h1 span,.brandCopy h1 em{background:linear-gradient(90deg,#ffffff 20%,#53caff 60%,#b86cff);-webkit-background-clip:text;background-clip:text;color:transparent}.authAction,.primaryBtn{background:linear-gradient(90deg,#16b9ff,#3678ff 48%,#9a4dff)!important}</style>
+.logo b{letter-spacing:.04em}.logo b::after{content:""}.mark{background:linear-gradient(135deg,#16b9ff,#3678ff 48%,#9a4dff)!important}.authBrand{background:radial-gradient(circle at 78% 18%,rgba(154,77,255,.14),transparent 25%),linear-gradient(145deg,#070b16,#0b1220)}.brandCopy h1 span,.brandCopy h1 em{background:linear-gradient(90deg,#ffffff 20%,#53caff 60%,#b86cff);-webkit-background-clip:text;background-clip:text;color:transparent}.authAction,.primaryBtn{background:linear-gradient(90deg,#16b9ff,#3678ff 48%,#9a4dff)!important}
+/* Integration command center */
+.integrationGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.integrationCard{background:linear-gradient(145deg,#111a2b,#0d1422);border:1px solid #243654;border-radius:15px;padding:18px;display:flex;justify-content:space-between;gap:15px;align-items:flex-start}
+.integrationCard h3{margin:0 0 5px;font-family:Manrope;font-size:14px}.integrationCard p{margin:0;color:#7e8da8;font-size:10px;line-height:1.55;max-width:330px}.integrationMeta{display:flex;align-items:center;gap:7px;margin-top:11px;font-size:9px;color:#75849d}.integrationDot{width:7px;height:7px;border-radius:50%;background:#555}.integrationDot.on{background:#4ade9b;box-shadow:0 0 12px rgba(74,222,155,.5)}
+.integrationBtn{border:1px solid #31517c;background:#12223a;color:#d7e8ff;border-radius:9px;padding:9px 12px;font-size:10px;font-weight:700;white-space:nowrap}.integrationBtn.connected{background:#123126;border-color:#286046;color:#9ef0c2}
+.syncBar{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:14px;padding:13px 15px;border:1px solid #243654;border-radius:12px;background:#0c1422;color:#7f8da7;font-size:10px}.syncBar b{color:#dce8fa}
+.contextSummary{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:14px}.contextStat{border:1px solid #22334f;background:#0d1626;border-radius:11px;padding:12px}.contextStat b{font-family:Manrope;font-size:19px}.contextStat span{display:block;color:#72819a;font-size:8px;text-transform:uppercase;letter-spacing:.1em;margin-top:3px}
+.noteBox{width:100%;min-height:170px;border:1px solid #2c3d59;background:#0b1220;color:#eaf2ff;border-radius:11px;padding:13px;outline:0;resize:vertical;font:inherit;font-size:11px;line-height:1.6}
+@media(max-width:760px){.integrationGrid{grid-template-columns:1fr}.contextSummary{grid-template-columns:repeat(2,1fr)}.syncBar{align-items:flex-start;flex-direction:column}}
+</style>
 </head>
 <body>
 <div id="loading" class="loading"><div class="loadingInner"><div class="mark"><img src="assets/multiwork-mark.svg" alt="MULTIWORK AI"></div><p>Preparing your executive workspace…</p></div></div>
@@ -81,7 +91,7 @@ body:before{content:"";position:fixed;inset:0;pointer-events:none;background:rad
 <button data-view="ask"><span class="ico"><svg class="navIcon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v4M12 17v4M3 12h4M17 12h4M5.6 5.6l2.8 2.8M15.6 15.6l2.8 2.8M18.4 5.6l-2.8 2.8M8.4 15.6l-2.8 2.8"/><circle cx="12" cy="12" r="3.5"/></svg></span><span>AI Assistant</span></button>
 <button data-view="people"><span class="ico"><svg class="navIcon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3"/><path d="M3.5 19c.6-3.1 2.4-5 5.5-5s4.9 1.9 5.5 5"/><circle cx="17" cy="9" r="2.3"/><path d="M15.2 14.3c2.8-.1 4.5 1.5 5.1 4"/></svg></span><span>People</span></button>
 <button data-view="work"><span class="ico"><svg class="navIcon" viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="5" width="16" height="14" rx="2"/><path d="M8 5V3h8v2M8 11h8M8 15h5"/></svg></span><span>Work</span></button>
-<button data-view="tasks"><span class="ico"><svg class="navIcon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="m8 12 2.6 2.7L16.5 9"/></svg></span><span>Tasks</span></button>
+<button data-view="tasks"><span class="ico"><svg class="navIcon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="m8 12 2.6 2.7L16.5 9"/></svg></span><span>Tasks</span></button><button data-view="integrations"><span class="ico"><svg class="navIcon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v18M3 12h18"/><circle cx="12" cy="12" r="7.5"/></svg></span><span>Connect</span></button>
 </nav><div class="sideBottom"><div class="profile"><div class="avatar" id="sideAvatar">EA</div><div><b id="sideName" style="font-size:11px">Executive</b><small id="sideRole">Private workspace</small></div></div></div></aside>
 <main class="main">
 <header class="top"><div class="crumb">Workspace / <strong id="crumb">Today</strong></div><div class="topActions"><div class="datePill" id="datePill"></div><button class="circle" id="bell" aria-label="Notifications">⌁</button><button class="circle" id="logout" aria-label="Sign out">↗</button></div></header>
@@ -108,6 +118,28 @@ body:before{content:"";position:fixed;inset:0;pointer-events:none;background:rad
 <div class="view" id="view-work"><div class="sectionTitle"><div><h2>Work</h2><p>Your active decisions and workstreams.</p></div><button class="primaryBtn" id="newWork">+ New work item</button></div><div class="list" id="workList"></div></div>
 
 <div class="view" id="view-tasks"><div class="sectionTitle"><div><h2>Tasks</h2><p>Everything open, sorted around your attention.</p></div><button class="primaryBtn" id="newTask">+ New task</button></div><div class="list" id="taskList"></div></div>
+<div class="view" id="view-integrations">
+  <div class="sectionTitle"><div><h2>Connect MULTIWORK</h2><p>Give your executive OS the context it needs. Every connection is permissioned and can be disconnected.</p></div><button class="secondaryBtn" id="syncAll">↻ Sync now</button></div>
+  <div class="panel" style="padding:16px;margin-bottom:14px">
+    <div class="eyebrow" style="margin-bottom:7px">Your context</div>
+    <div style="font-size:13px;color:#dce8fa">MULTIWORK currently knows <b id="contextLine">your workspace</b>. Connect your sources to make the command bar genuinely intelligent.</div>
+    <div class="contextSummary">
+      <div class="contextStat"><b id="ctxEvents">0</b><span>Calendar</span></div>
+      <div class="contextStat"><b id="ctxPeople">0</b><span>People</span></div>
+      <div class="contextStat"><b id="ctxMail">0</b><span>Email</span></div>
+      <div class="contextStat"><b id="ctxNotes">0</b><span>Notes</span></div>
+    </div>
+  </div>
+  <div class="integrationGrid">
+    <div class="integrationCard"><div><h3>Google Calendar</h3><p>Read your schedule and, when enabled, create or move events from MULTIWORK.</p><div class="integrationMeta"><i class="integrationDot" id="dotCalendar"></i><span id="statusCalendar">Not connected</span></div></div><button class="integrationBtn" data-connect="google" id="connectGoogle">Connect Google</button></div>
+    <div class="integrationCard"><div><h3>Google Contacts</h3><p>Bring important people, email addresses and phone numbers into your executive relationship layer.</p><div class="integrationMeta"><i class="integrationDot" id="dotContacts"></i><span id="statusContacts">Waiting for Google</span></div></div><button class="integrationBtn" data-connect="google">Use Google</button></div>
+    <div class="integrationCard"><div><h3>Gmail</h3><p>Let MULTIWORK understand relevant email threads and prepare responses without exposing your credentials to the browser.</p><div class="integrationMeta"><i class="integrationDot" id="dotGmail"></i><span id="statusGmail">Waiting for Google</span></div></div><button class="integrationBtn" data-connect="google">Use Google</button></div>
+    <div class="integrationCard"><div><h3>Notes / Notepad</h3><p>Use MULTIWORK Notes immediately, with room for a future Google Keep connector. Notes stay inside your private workspace.</p><div class="integrationMeta"><i class="integrationDot on"></i><span>Available now</span></div></div><button class="integrationBtn connected" id="openNotes">Open notes</button></div>
+    <div class="integrationCard"><div><h3>ChatGPT / OpenAI</h3><p>Use a server-side OpenAI connection to reason over your workspace context. API keys never belong in the browser.</p><div class="integrationMeta"><i class="integrationDot" id="dotAI"></i><span id="statusAI">Needs API key</span></div></div><button class="integrationBtn" id="testAI">Test AI</button></div>
+    <div class="integrationCard"><div><h3>Phone call history</h3><p>Web browsers cannot read the phone's native call log. This is reserved for a future native Android companion with explicit device permission.</p><div class="integrationMeta"><i class="integrationDot"></i><span>Native companion required</span></div></div><button class="integrationBtn" disabled>Coming later</button></div>
+  </div>
+  <div class="syncBar"><span id="syncStatus">Connect Google to import your calendar, contacts and email context.</span><button class="secondaryBtn" id="disconnectGoogle">Disconnect Google</button></div>
+</div>
 
 </section></main></div></section>
 
@@ -122,7 +154,7 @@ const SUPABASE_KEY="sb_publishable_lFUwGLc3b7qJ1U7rKomv1g_LKM7AQzp";
 let supabase=createClient(SUPABASE_URL,SUPABASE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
 
 const $=s=>document.querySelector(s), $$=s=>document.querySelectorAll(s);
-const state={user:null,profile:null,tasks:[],events:[],contacts:[],view:"today"};
+const state={user:null,profile:null,tasks:[],events:[],contacts:[],external:[],notes:[],integrations:[],googleToken:null,view:"today"};
 
 function toast(title,msg){const t=$("#toast");t.innerHTML="<b>"+escapeHtml(title)+"</b>"+escapeHtml(msg);t.classList.add("show");clearTimeout(window.__toast);window.__toast=setTimeout(()=>t.classList.remove("show"),3800)}
 function escapeHtml(v){return String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[c]))}
@@ -144,14 +176,115 @@ function showApp(){ $("#authScreen").classList.add("hidden");$("#appScreen").cla
 function hideLoading(){ $("#loading").classList.add("hidden") }
 async function initAuth(){
   const {data:{session}}=await supabase.auth.getSession();
+  captureProviderToken(session);
   if(session?.user){state.user={id:session.user.id,email:session.user.email||"",name:session.user.user_metadata?.full_name||session.user.email?.split("@")[0]||"Executive"};showApp();await loadWorkspace();}
   else showAuth("signin");
   supabase.auth.onAuthStateChange(async(event,session)=>{
+    captureProviderToken(session);
     if(event==="SIGNED_IN"&&session?.user){state.user={id:session.user.id,email:session.user.email||"",name:session.user.user_metadata?.full_name||session.user.email?.split("@")[0]||"Executive"};showApp();try{await loadWorkspace()}catch(err){console.error(err);toast("Workspace error",err.message)}}
-    else if(event==="SIGNED_OUT"){state.user=null;state.profile=null;state.tasks=[];state.events=[];state.contacts=[];showAuth("signin")}
+    else if(event==="SIGNED_OUT"){state.user=null;state.profile=null;state.tasks=[];state.events=[];state.contacts=[];state.external=[];state.notes=[];state.integrations=[];state.googleToken=null;showAuth("signin")}
   });
   hideLoading();
 }
+
+function captureProviderToken(session){
+  if(session?.provider_token) state.googleToken=session.provider_token;
+  if(session?.provider_refresh_token) state.googleRefreshToken=session.provider_refresh_token;
+  if(session?.user && session.user.app_metadata?.provider==="google") state.googleConnected=true;
+}
+const GOOGLE_SCOPES=[
+  "https://www.googleapis.com/auth/calendar.events",
+  "https://www.googleapis.com/auth/contacts.readonly",
+  "https://www.googleapis.com/auth/gmail.readonly",
+  "https://www.googleapis.com/auth/gmail.send"
+].join(" ");
+async function connectGoogle(){
+  if(!state.user){toast("Sign in required","Connect Google after entering your MULTIWORK workspace.");return}
+  const {data,error}=await supabase.auth.linkIdentity({provider:"google",options:{scopes:GOOGLE_SCOPES,queryParams:{access_type:"offline",prompt:"consent"}}});
+  if(error){toast("Google connection needs setup",error.message);return}
+  if(data?.url) window.location.href=data.url;
+}
+async function upsertIntegration(provider,status,capabilities,metadata={}){
+  if(!state.user)return;
+  const payload={user_id:state.user.id,provider,status,capabilities,metadata,connected_at:status==="connected"?new Date().toISOString():null,last_error:null,updated_at:new Date().toISOString()};
+  const {error}=await supabase.from("integrations").upsert(payload,{onConflict:"user_id,provider"});
+  if(error) console.error(error);
+}
+async function googleFetch(url,options={}){
+  if(!state.googleToken) throw new Error("Google is not connected in this session. Reconnect Google.");
+  const res=await fetch(url,{...options,headers:{...(options.headers||{}),Authorization:"Bearer "+state.googleToken}});
+  if(!res.ok) throw new Error("Google API returned "+res.status);
+  return res.json();
+}
+async function syncGoogle(){
+  if(!state.googleToken){toast("Connect Google first","Use Connect in the integration center.");return}
+  const uid=state.user.id;
+  const now=new Date(), past=new Date(now.getTime()-7*86400000), future=new Date(now.getTime()+30*86400000);
+  try{
+    const [cal,people,mail]=await Promise.all([
+      googleFetch("https://www.googleapis.com/calendar/v3/calendars/primary/events?singleEvents=true&orderBy=startTime&timeMin="+encodeURIComponent(past.toISOString())+"&timeMax="+encodeURIComponent(future.toISOString())+"&maxResults=100"),
+      googleFetch("https://people.googleapis.com/v1/people/me/connections?pageSize=100&personFields=names,emailAddresses,phoneNumbers,organizations"),
+      googleFetch("https://gmail.googleapis.com/gmail/v1/users/me/messages?maxResults=25&q=newer_than:30d")
+    ]);
+    let eventCount=0,personCount=0,mailCount=0;
+    for(const e of (cal.items||[])){
+      const start=e.start?.dateTime||e.start?.date;if(!start)continue;
+      const end=e.end?.dateTime||e.end?.date||null;
+      await supabase.from("external_items").upsert({user_id:uid,provider:"google_calendar",kind:"calendar_event",external_id:e.id,title:e.summary||"Untitled event",content:e.description||"",external_url:e.htmlLink||null,occurred_at:start,metadata:{end,location:e.location||null,status:e.status||null}},{onConflict:"user_id,provider,kind,external_id"});
+      await supabase.from("events").upsert({user_id:uid,title:e.summary||"Untitled event",description:e.description||null,starts_at:new Date(start).toISOString(),ends_at:end?new Date(end).toISOString():null,location:e.location||null,status:e.status==="cancelled"?"cancelled":"scheduled"},{onConflict:"id"});
+      eventCount++;
+    }
+    for(const p of (people.connections||[])){
+      const name=p.names?.[0]?.displayName||"Unnamed contact";
+      const email=p.emailAddresses?.[0]?.value||null, phone=p.phoneNumbers?.[0]?.value||null, org=p.organizations?.[0]?.name||null, role=p.organizations?.[0]?.title||null;
+      const eid=p.resourceName||name;
+      await supabase.from("external_items").upsert({user_id:uid,provider:"google_people",kind:"contact",external_id:eid,title:name,content:[email,phone,org,role].filter(Boolean).join(" · "),metadata:{email,phone,company:org,role}},{onConflict:"user_id,provider,kind,external_id"});
+      const existing=state.contacts.find(x=>x.email===email||x.phone===phone||x.full_name===name);
+      if(!existing) await supabase.from("contacts").insert({user_id:uid,full_name:name,email,phone,company:org,role});
+      personCount++;
+    }
+    for(const m of (mail.messages||[])){
+      const msg=await googleFetch("https://gmail.googleapis.com/gmail/v1/users/me/messages/"+encodeURIComponent(m.id)+"?format=metadata&metadataHeaders=Subject&metadataHeaders=From&metadataHeaders=Date");
+      const headers=Object.fromEntries((msg.payload?.headers||[]).map(h=>[h.name.toLowerCase(),h.value]));
+      await supabase.from("external_items").upsert({user_id:uid,provider:"gmail",kind:"email",external_id:m.id,title:headers.subject||"Email",content:headers.from||"",occurred_at:headers.date?new Date(headers.date).toISOString():null,metadata:{threadId:msg.threadId,labelIds:msg.labelIds||[],from:headers.from||null}},{onConflict:"user_id,provider,kind,external_id"});
+      mailCount++;
+    }
+    await upsertIntegration("google","connected",["calendar","contacts","email"],{email:state.user.email});
+    await loadWorkspace();
+    toast("Google synced",eventCount+" calendar events · "+personCount+" contacts · "+mailCount+" emails imported.");
+    $("#syncStatus").textContent="Last synced just now.";
+  }catch(err){
+    console.error(err);toast("Google sync failed",err.message);
+    await upsertIntegration("google","error",[],{});
+  }
+}
+function updateIntegrationUI(){
+  const connected=!!state.googleToken||state.integrations.some(x=>x.provider==="google"&&x.status==="connected");
+  ["dotCalendar","dotContacts","dotGmail"].forEach(id=>$( "#"+id)?.classList.toggle("on",connected));
+  ["statusCalendar","statusContacts","statusGmail"].forEach(id=>{const el=$("#"+id);if(el)el.textContent=connected?"Connected":"Waiting for Google"});
+  const btn=$("#connectGoogle");if(btn){btn.textContent=connected?"Sync Google":"Connect Google";btn.classList.toggle("connected",connected);btn.onclick=connected?syncGoogle:connectGoogle}
+  const ai=$("#dotAI");if(ai)ai.classList.toggle("on",!!window.__multiworkAIReady);
+  $("#ctxEvents").textContent=state.events.length+state.external.filter(x=>x.kind==="calendar_event").length;
+  $("#ctxPeople").textContent=state.contacts.length+state.external.filter(x=>x.kind==="contact").length;
+  $("#ctxMail").textContent=state.external.filter(x=>x.kind==="email").length;
+  $("#ctxNotes").textContent=state.notes.length;
+  $("#contextLine").textContent=(state.tasks.length+" tasks, "+state.events.length+" events and "+state.contacts.length+" people")+(state.external.length?" plus "+state.external.length+" imported records":"");
+}
+async function openNotes(){
+  const existing=state.notes[0];
+  showModal("MULTIWORK Notes","Capture the things you want the operating system to remember.",`<input class="modalInput" id="noteTitle" value="${escapeHtml(existing?.title||"Executive note")}" placeholder="Note title"><textarea class="noteBox" id="noteContent" placeholder="Write anything MULTIWORK should remember…">${escapeHtml(existing?.content||"")}</textarea>`,existing?"Save note":"Create note");
+  $("#modalPrimary").onclick=async()=>{const title=$("#noteTitle").value.trim()||"Untitled note",content=$("#noteContent").value.trim();const q=existing?supabase.from("notes").update({title,content,updated_at:new Date().toISOString()}).eq("id",existing.id).eq("user_id",state.user.id):supabase.from("notes").insert({user_id:state.user.id,title,content});const {error}=await q;if(error){toast("Could not save note",error.message);return}$("#modal").classList.remove("open");await loadWorkspace();toast("Note saved","MULTIWORK can now use this note as context.");};
+}
+async function testAI(){
+  const {data:{session}}=await supabase.auth.getSession();
+  if(!session){toast("Sign in required","Your workspace session is missing.");return}
+  try{
+    const res=await fetch("/api/ai",{method:"POST",headers:{"Content-Type":"application/json",Authorization:"Bearer "+session.access_token},body:JSON.stringify({message:"Reply with exactly: MULTIWORK AI is connected.",context:{profile:state.profile,tasks:state.tasks.slice(0,20),events:state.events.slice(0,20),contacts:state.contacts.slice(0,20),external:state.external.slice(0,50),notes:state.notes.slice(0,10)}})});
+    const data=await res.json();if(!res.ok)throw new Error(data.error||"AI endpoint unavailable");
+    window.__multiworkAIReady=true;updateIntegrationUI();toast("AI connected",data.output||"OpenAI is responding.");
+  }catch(err){toast("AI not connected",err.message)}
+}
+
 async function handleAuthSubmit(e){
   e.preventDefault();const email=$("#authEmail").value.trim(),password=$("#authPassword").value,signup=!$("#nameField").classList.contains("hidden"),name=$("#authName").value.trim();
   if(!email||!password){setMessage("error","Enter your email and password.");return}
@@ -206,16 +339,21 @@ async function init(){
 }
 async function loadWorkspace(){
   const uid=state.user.id;
-  const [profile,tasks,events,contacts]=await Promise.all([
+  const [profile,tasks,events,contacts,external,notes,integrations]=await Promise.all([
     supabase.from("profiles").select("*").eq("id",uid).maybeSingle(),
     supabase.from("tasks").select("*").eq("user_id",uid).order("due_at",{ascending:true,nullsFirst:false}),
     supabase.from("events").select("*").eq("user_id",uid).order("starts_at",{ascending:true}),
-    supabase.from("contacts").select("*").eq("user_id",uid).order("updated_at",{ascending:false})
+    supabase.from("contacts").select("*").eq("user_id",uid).order("updated_at",{ascending:false}),
+    supabase.from("external_items").select("*").eq("user_id",uid).order("occurred_at",{ascending:false}).limit(200),
+    supabase.from("notes").select("*").eq("user_id",uid).order("updated_at",{ascending:false}).limit(50),
+    supabase.from("integrations").select("*").eq("user_id",uid).order("updated_at",{ascending:false})
   ]);
-  const queryError=[profile,tasks,events,contacts].map(r=>r.error).find(Boolean);
+  const queryError=[profile,tasks,events,contacts,external,notes,integrations].map(r=>r.error).find(Boolean);
   if(queryError) throw queryError;
   state.profile=profile.data;
   state.tasks=tasks.data||[];state.events=events.data||[];state.contacts=contacts.data||[];
+  state.external=external.data||[];state.notes=notes.data||[];state.integrations=integrations.data||[];
+  updateIntegrationUI();
   if(!state.profile||!state.profile.onboarding_completed){await showOnboarding();return}
   renderAll();
 }
@@ -280,7 +418,7 @@ async function addPerson(){showModal("Add person","Keep an important relationshi
 async function addWork(){showModal("New work item","Create a workstream or decision.",`<div class="field"><label>NAME</label><input class="modalInput" id="workTitle" placeholder="Acquisition, contract review…"></div><div class="field"><label>DESCRIPTION</label><input class="modalInput" id="workDesc" placeholder="What is this about?"></div>`,"Create");$("#modalPrimary").onclick=async()=>{const title=$("#workTitle").value.trim();if(!title){toast("Name required","Give the work item a name.");return}const {error}=await supabase.from("tasks").insert({user_id:state.user.id,title,description:$("#workDesc").value.trim()||null,status:"open",priority:"high",owner_type:"you"});if(error){toast("Could not create",error.message);return}$("#modal").classList.remove("open");await loadWorkspace();setView("work");toast("Work item created",title+" is now active.")}}
 function summarizeTask(id){const t=state.tasks.find(x=>x.id===id);if(!t)return;showModal("Executive summary",t.title,`<div style="color:#999ca4;font-size:12px;line-height:1.7"><b>Priority:</b> ${escapeHtml(t.priority||"normal")}<br><b>Status:</b> ${escapeHtml(t.status||"open")}<br><b>Owner:</b> ${escapeHtml(t.owner_type||"YOU")}<br><b>Next step:</b> ${escapeHtml(t.description||"Review this item and decide the next action.")}</div>`,"Close");$("#modalPrimary").onclick=()=>$("#modal").classList.remove("open")}
 function showModal(title,text,body,action){$("#modalTitle").textContent=title;$("#modalText").textContent=text;$("#modalBody").innerHTML=body;$("#modalPrimary").textContent=action||"Done";$("#modalCancel").classList.remove("hidden");$("#modal").classList.add("open")}
-function setView(name){state.view=name;$$(".view").forEach(v=>v.classList.remove("active"));$("#view-"+name).classList.add("active");$$(".nav button").forEach(b=>b.classList.toggle("active",b.dataset.view===name));$("#crumb").textContent=name==="today"?"Today":name==="ask"?"Ask MULTI":name[0].toUpperCase()+name.slice(1);if(name==="ask")setTimeout(()=>$("#command2").focus(),60)}
+function setView(name){state.view=name;$( ".view").forEach(v=>v.classList.remove("active"));$("#view-"+name).classList.add("active");$$(".nav button").forEach(b=>b.classList.toggle("active",b.dataset.view===name));$("#crumb").textContent=name==="today"?"Today":name==="ask"?"Ask MULTI":name[0].toUpperCase()+name.slice(1);if(name==="ask")setTimeout(()=>$("#command2").focus(),60)}
 function commandAnswer(raw,target){const q=raw.trim().toLowerCase();if(!q){toast("Ask MULTI","Tell me what you need.");return}let title="MULTIWORK AI",msg="I can act on your workspace data now.";if(q.includes("overwhelmed")||q.includes("too much")){const open=openCount();showModal("Let’s reduce the load","MULTIWORK AI found "+open+" open task"+(open===1?"":"s")+" in your workspace.",`<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px"><div class="panel" style="padding:15px"><b>${state.tasks.filter(t=>!["completed","done"].includes(t.status)&&(!t.owner_type||t.owner_type==="you")).length}</b><small style="display:block;color:#777;margin-top:5px">YOU</small></div><div class="panel" style="padding:15px"><b>${state.tasks.filter(t=>t.status==="delegated"||t.owner_type==="delegate").length}</b><small style="display:block;color:#777;margin-top:5px">DELEGATED</small></div><div class="panel" style="padding:15px"><b>${state.tasks.filter(t=>t.status==="waiting").length}</b><small style="display:block;color:#777;margin-top:5px">WAITING</small></div></div>`,"Show priorities");$("#modalPrimary").onclick=()=>{setView("tasks");$("#modal").classList.remove("open")};return}
 if(q.includes("attention")||q.includes("focus")){const p=state.tasks.filter(t=>!["completed","done"].includes(t.status)).sort((a,b)=>priorityScore(b)-priorityScore(a)).slice(0,3);title="Your focus";msg=p.length?p.map((x,i)=>(i+1)+". "+x.title).join("  •  "):"Your attention is clear."}
 else if(q.includes("today")||q.includes("schedule")){title="Today";msg=(state.events.filter(e=>isToday(e.starts_at)).map(e=>time(e.starts_at)+" "+e.title).join("  •  "))||"Nothing is scheduled today."}
@@ -288,7 +426,12 @@ else if(q.includes("tomorrow")){const d=new Date();d.setDate(d.getDate()+1);cons
 else if(q.includes("people")||q.includes("contact")){title="People";msg=state.contacts.length+" important relationship"+(state.contacts.length===1?"":"s")+" are saved in your workspace."}
 else if(q.includes("task")){title="Tasks";msg="You have "+openCount()+" open task"+(openCount()===1?"":"s")+" and "+state.tasks.filter(t=>t.status==="delegated").length+" delegated."}
 $("#aiResult").classList.remove("hidden");$("#aiResult").innerHTML="<b>"+escapeHtml(title)+"</b><p>"+escapeHtml(msg)+"</p><div class='resultActions'><button class='primaryBtn' id='resultGo'>Open workspace</button></div>";$("#resultGo").onclick=()=>{setView(q.includes("people")?"people":q.includes("task")?"tasks":"today")};if(target==="command")toast(title,msg)}
-$("#ask").onclick=()=>commandAnswer($("#command").value,"command");$("#ask2").onclick=()=>commandAnswer($("#command2").value,"ask");$("#command").addEventListener("keydown",e=>{if(e.key==="Enter")commandAnswer($("#command").value,"command")});$("#command2").addEventListener("keydown",e=>{if(e.key==="Enter")commandAnswer($("#command2").value,"ask")});$$(".suggestion").forEach(b=>b.onclick=()=>{$("#command").value=b.dataset.prompt;commandAnswer(b.dataset.prompt,"command")});
+$("#ask").onclick=()=>commandAnswer($("#command").value,"command");
+$("#connectGoogle")?.addEventListener("click",connectGoogle);
+$("#syncAll")?.addEventListener("click",syncGoogle);
+$("#disconnectGoogle")?.addEventListener("click",async()=>{state.googleToken=null;state.googleConnected=false;await upsertIntegration("google","disconnected",[],{});updateIntegrationUI();toast("Google disconnected","MULTIWORK will no longer use Google context until you reconnect it.");});
+$("#openNotes")?.addEventListener("click",openNotes);
+$("#testAI")?.addEventListener("click",testAI);$("#ask2").onclick=()=>commandAnswer($("#command2").value,"ask");$("#command").addEventListener("keydown",e=>{if(e.key==="Enter")commandAnswer($("#command").value,"command")});$("#command2").addEventListener("keydown",e=>{if(e.key==="Enter")commandAnswer($("#command2").value,"ask")});$$(".suggestion").forEach(b=>b.onclick=()=>{$("#command").value=b.dataset.prompt;commandAnswer(b.dataset.prompt,"command")});
 $$(".nav button").forEach(b=>b.onclick=()=>setView(b.dataset.view));$("#newTask").onclick=addTask;$("#addPerson").onclick=addPerson;$("#newWork").onclick=addWork;$("#modalCancel").onclick=()=>$("#modal").classList.remove("open");$("#modal").addEventListener("click",e=>{if(e.target.id==="modal")$("#modal").classList.remove("open")});
 $("#bell").onclick=()=>showModal("Notifications","Your current workspace has no urgent notifications.","<div class='empty'>You’re all clear.</div>","Close");$("#modalPrimary").onclick=()=>$("#modal").classList.remove("open");
 
