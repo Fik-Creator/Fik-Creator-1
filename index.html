@@ -184,6 +184,7 @@ async function initAuth(){
     if(event==="SIGNED_IN"&&session?.user){state.user={id:session.user.id,email:session.user.email||"",name:session.user.user_metadata?.full_name||session.user.email?.split("@")[0]||"Executive"};showApp();try{await loadWorkspace()}catch(err){console.error(err);toast("Workspace error",err.message)}}
     else if(event==="SIGNED_OUT"){state.user=null;state.profile=null;state.tasks=[];state.events=[];state.contacts=[];state.external=[];state.notes=[];state.integrations=[];state.googleToken=null;showAuth("signin")}
   });
+  if("serviceWorker" in navigator) navigator.serviceWorker.register("/sw.js").catch(()=>{});
   hideLoading();
 }
 
@@ -192,12 +193,7 @@ function captureProviderToken(session){
   if(session?.provider_refresh_token) state.googleRefreshToken=session.provider_refresh_token;
   if(session?.user && session.user.app_metadata?.provider==="google") state.googleConnected=true;
 }
-const GOOGLE_SCOPES=[
-  "https://www.googleapis.com/auth/calendar.events",
-  "https://www.googleapis.com/auth/contacts.readonly",
-  "https://www.googleapis.com/auth/gmail.readonly",
-  "https://www.googleapis.com/auth/gmail.send"
-].join(" ");
+const GOOGLE_SCOPES=["https://www.googleapis.com/auth/calendar.events.readonly","https://www.googleapis.com/auth/contacts.readonly","https://www.googleapis.com/auth/gmail.readonly"].join(" ");
 async function startVoiceCommand(){
   const SpeechRecognition=window.SpeechRecognition||window.webkitSpeechRecognition;
   if(!SpeechRecognition){toast("Voice unavailable","This browser does not provide speech recognition. Use a supported browser or the future MULTIWORK mobile app.");return}
