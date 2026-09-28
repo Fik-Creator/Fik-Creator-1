@@ -161,10 +161,21 @@ async function handleAuthSubmit(e){
     if(signup){
       const {data,error}=await supabase.auth.signUp({email,password,options:{data:{full_name:name},emailRedirectTo:window.location.origin+window.location.pathname}});
       if(error)throw error;
-      if(data.session){state.user={id:data.user.id,email:data.user.email||email,name};showApp();await loadWorkspace();toast("Welcome to MULTIWORK AI","Your executive workspace is ready.");}
-      else if(data.user){
-        showAuth("signin");
-        setMessage("error","Your account was created, but email confirmation is still enabled in the authentication settings. Turn off Confirm Email in Supabase Auth settings for instant access, then sign in again.");
+      if(data.session){
+        state.user={id:data.user.id,email:data.user.email||email,name};
+        showApp();
+        await loadWorkspace();
+        toast("Welcome to MULTIWORK AI","Your executive workspace is ready.");
+      }else if(data.user){
+        // Supabase normally returns a session immediately when Confirm Email is disabled.
+        // If the session is not attached yet, try signing in once before treating it as an email-confirmation flow.
+        const retry=await supabase.auth.signInWithPassword({email,password});
+        if(retry.error)throw retry.error;
+        if(!retry.data?.session||!retry.data?.user)throw new Error("MULTIWORK AI could not establish your session. Please try signing in again.");
+        state.user={id:retry.data.user.id,email:retry.data.user.email||email,name};
+        showApp();
+        await loadWorkspace();
+        toast("Welcome to MULTIWORK AI","Your executive workspace is ready.");
       }else{
         showAuth("signup");
         setMessage("error","MULTIWORK AI could not create the account. Please try again.");
@@ -201,7 +212,8 @@ async function loadWorkspace(){
     supabase.from("events").select("*").eq("user_id",uid).order("starts_at",{ascending:true}),
     supabase.from("contacts").select("*").eq("user_id",uid).order("updated_at",{ascending:false})
   ]);
-  if(profile.error) throw profile.error;
+  const queryError=[profile,tasks,events,contacts].map(r=>r.error).find(Boolean);
+  if(queryError) throw queryError;
   state.profile=profile.data;
   state.tasks=tasks.data||[];state.events=events.data||[];state.contacts=contacts.data||[];
   if(!state.profile||!state.profile.onboarding_completed){await showOnboarding();return}
