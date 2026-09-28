@@ -231,7 +231,7 @@ async function syncGoogle(){
       const start=e.start?.dateTime||e.start?.date;if(!start)continue;
       const end=e.end?.dateTime||e.end?.date||null;
       await supabase.from("external_items").upsert({user_id:uid,provider:"google_calendar",kind:"calendar_event",external_id:e.id,title:e.summary||"Untitled event",content:e.description||"",external_url:e.htmlLink||null,occurred_at:start,metadata:{end,location:e.location||null,status:e.status||null}},{onConflict:"user_id,provider,kind,external_id"});
-      await supabase.from("events").upsert({user_id:uid,title:e.summary||"Untitled event",description:e.description||null,starts_at:new Date(start).toISOString(),ends_at:end?new Date(end).toISOString():null,location:e.location||null,status:e.status==="cancelled"?"cancelled":"scheduled"},{onConflict:"id"});
+      await supabase.from("events").upsert({user_id:uid,source_provider:"google_calendar",source_external_id:e.id,title:e.summary||"Untitled event",description:e.description||null,starts_at:new Date(start).toISOString(),ends_at:end?new Date(end).toISOString():null,location:e.location||null,status:e.status==="cancelled"?"cancelled":"scheduled"},{onConflict:"user_id,source_provider,source_external_id"});
       eventCount++;
     }
     for(const p of (people.connections||[])){
@@ -419,12 +419,35 @@ async function addWork(){showModal("New work item","Create a workstream or decis
 function summarizeTask(id){const t=state.tasks.find(x=>x.id===id);if(!t)return;showModal("Executive summary",t.title,`<div style="color:#999ca4;font-size:12px;line-height:1.7"><b>Priority:</b> ${escapeHtml(t.priority||"normal")}<br><b>Status:</b> ${escapeHtml(t.status||"open")}<br><b>Owner:</b> ${escapeHtml(t.owner_type||"YOU")}<br><b>Next step:</b> ${escapeHtml(t.description||"Review this item and decide the next action.")}</div>`,"Close");$("#modalPrimary").onclick=()=>$("#modal").classList.remove("open")}
 function showModal(title,text,body,action){$("#modalTitle").textContent=title;$("#modalText").textContent=text;$("#modalBody").innerHTML=body;$("#modalPrimary").textContent=action||"Done";$("#modalCancel").classList.remove("hidden");$("#modal").classList.add("open")}
 function setView(name){state.view=name;$( ".view").forEach(v=>v.classList.remove("active"));$("#view-"+name).classList.add("active");$$(".nav button").forEach(b=>b.classList.toggle("active",b.dataset.view===name));$("#crumb").textContent=name==="today"?"Today":name==="ask"?"Ask MULTI":name[0].toUpperCase()+name.slice(1);if(name==="ask")setTimeout(()=>$("#command2").focus(),60)}
+async function askAI(raw,target){
+  const {data:{session}}=await supabase.auth.getSession();
+  if(!session){toast("Sign in required","Your workspace session is missing.");return}
+  const box=target==="ask"?$("#aiResult"):$("#aiResult");
+  box.classList.remove("hidden");
+  box.innerHTML="<b>MULTIWORK AI is thinking…</b><p>Reading the context you have connected.</p>";
+  try{
+    const res=await fetch("/api/ai",{method:"POST",headers:{"Content-Type":"application/json",Authorization:"Bearer "+session.access_token},body:JSON.stringify({
+      message:raw,
+      context:{profile:state.profile,tasks:state.tasks.slice(0,50),events:state.events.slice(0,50),contacts:state.contacts.slice(0,50),external:state.external.slice(0,120),notes:state.notes.slice(0,20)}
+    })});
+    const data=await res.json();
+    if(!res.ok)throw new Error(data.error||"AI endpoint unavailable");
+    window.__multiworkAIReady=true;updateIntegrationUI();
+    box.innerHTML="<b>MULTIWORK AI</b><p>"+escapeHtml(data.output||"No response generated.")+"</p>";
+    if(target==="command")toast("MULTIWORK AI","I used your connected workspace context.");
+  }catch(err){
+    box.innerHTML="<b>AI connection needed</b><p>"+escapeHtml(err.message)+"</p>";
+    toast("AI unavailable",err.message);
+  }
+}
+
 function commandAnswer(raw,target){const q=raw.trim().toLowerCase();if(!q){toast("Ask MULTI","Tell me what you need.");return}let title="MULTIWORK AI",msg="I can act on your workspace data now.";if(q.includes("overwhelmed")||q.includes("too much")){const open=openCount();showModal("Let’s reduce the load","MULTIWORK AI found "+open+" open task"+(open===1?"":"s")+" in your workspace.",`<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px"><div class="panel" style="padding:15px"><b>${state.tasks.filter(t=>!["completed","done"].includes(t.status)&&(!t.owner_type||t.owner_type==="you")).length}</b><small style="display:block;color:#777;margin-top:5px">YOU</small></div><div class="panel" style="padding:15px"><b>${state.tasks.filter(t=>t.status==="delegated"||t.owner_type==="delegate").length}</b><small style="display:block;color:#777;margin-top:5px">DELEGATED</small></div><div class="panel" style="padding:15px"><b>${state.tasks.filter(t=>t.status==="waiting").length}</b><small style="display:block;color:#777;margin-top:5px">WAITING</small></div></div>`,"Show priorities");$("#modalPrimary").onclick=()=>{setView("tasks");$("#modal").classList.remove("open")};return}
 if(q.includes("attention")||q.includes("focus")){const p=state.tasks.filter(t=>!["completed","done"].includes(t.status)).sort((a,b)=>priorityScore(b)-priorityScore(a)).slice(0,3);title="Your focus";msg=p.length?p.map((x,i)=>(i+1)+". "+x.title).join("  •  "):"Your attention is clear."}
 else if(q.includes("today")||q.includes("schedule")){title="Today";msg=(state.events.filter(e=>isToday(e.starts_at)).map(e=>time(e.starts_at)+" "+e.title).join("  •  "))||"Nothing is scheduled today."}
 else if(q.includes("tomorrow")){const d=new Date();d.setDate(d.getDate()+1);const ev=state.events.filter(e=>{const x=new Date(e.starts_at);return x.toDateString()===d.toDateString()});title="Tomorrow";msg=ev.length?ev.map(e=>time(e.starts_at)+" "+e.title).join("  •  "):"Nothing is scheduled tomorrow."}
 else if(q.includes("people")||q.includes("contact")){title="People";msg=state.contacts.length+" important relationship"+(state.contacts.length===1?"":"s")+" are saved in your workspace."}
 else if(q.includes("task")){title="Tasks";msg="You have "+openCount()+" open task"+(openCount()===1?"":"s")+" and "+state.tasks.filter(t=>t.status==="delegated").length+" delegated."}
+else return askAI(raw,target);
 $("#aiResult").classList.remove("hidden");$("#aiResult").innerHTML="<b>"+escapeHtml(title)+"</b><p>"+escapeHtml(msg)+"</p><div class='resultActions'><button class='primaryBtn' id='resultGo'>Open workspace</button></div>";$("#resultGo").onclick=()=>{setView(q.includes("people")?"people":q.includes("task")?"tasks":"today")};if(target==="command")toast(title,msg)}
 $("#ask").onclick=()=>commandAnswer($("#command").value,"command");
 $("#connectGoogle")?.addEventListener("click",connectGoogle);
