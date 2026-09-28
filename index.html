@@ -79,7 +79,8 @@ import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js
 
 const SUPABASE_URL="https://cjsiwwbqbmviucpezglt.supabase.co";
 const SUPABASE_KEY="sb_publishable_lFUwGLc3b7qJ1U7rKomv1g_LKM7AQzp";
-const supabase=createClient(SUPABASE_URL,SUPABASE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
+let supabase=null;
+let clerk=null;
 
 const $=s=>document.querySelector(s), $$=s=>document.querySelectorAll(s);
 const state={user:null,profile:null,tasks:[],events:[],contacts:[],view:"today"};
@@ -95,8 +96,11 @@ function setMessage(kind,msg){$("#authMessage").innerHTML=msg?'<div class="'+kin
 
 function showAuth(mode="signin"){
   $("#authScreen").classList.remove("hidden");$("#appScreen").classList.add("hidden");
-  const signup=mode==="signup";$("#signInTab").classList.toggle("active",!signup);$("#signUpTab").classList.toggle("active",signup);
-  $("#nameField").classList.toggle("hidden",!signup);$("#forgotWrap").classList.toggle("hidden",signup);$("#authSubmit").textContent=signup?"Create my workspace":"Sign in";$("#authPassword").autocomplete=signup?"new-password":"current-password";setMessage("","");
+  const signup=mode==="signup";
+  $("#signInTab").classList.toggle("active",!signup);
+  $("#signUpTab").classList.toggle("active",signup);
+  setMessage("","");
+  if(clerk) setTimeout(()=>mountClerk(mode),20);
 }
 function showApp(){ $("#authScreen").classList.add("hidden");$("#appScreen").classList.remove("hidden") }
 function hideLoading(){ $("#loading").classList.add("hidden") }
