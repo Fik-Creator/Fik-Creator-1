@@ -99,7 +99,7 @@ body:before{content:"";position:fixed;inset:0;pointer-events:none;background:rad
 
 <div class="view active" id="view-today">
 <div class="hero"><div><div class="eyebrow">Executive command center</div><h1 id="greeting">Good morning.<br>Here’s what matters.</h1><p id="heroSub">Your workspace is organized around what needs you.</p></div><div class="status"><span>System status</span><b><i class="dot"></i><span style="display:inline;color:#fff;text-transform:none;letter-spacing:0">Workspace secured</span></b></div></div>
-<div class="command"><span class="spark">✦</span><input id="command" placeholder="Ask MULTIWORK AI anything…" autocomplete="off"><button class="ask" id="ask">Ask MULTI</button></div>
+<div class="command"><span class="spark">✦</span><input id="command" placeholder="Ask MULTIWORK AI anything…" autocomplete="off"><button class="ask" id="voiceCommand" title="Voice command">◉</button><button class="ask" id="ask">Ask MULTI</button></div>
 <div class="suggestions"><button class="suggestion" data-prompt="What requires my attention?">What requires my attention?</button><button class="suggestion" data-prompt="What do I have today?">What do I have today?</button><button class="suggestion" data-prompt="I'm overwhelmed">I’m overwhelmed</button></div>
 <div class="grid">
 <section class="panel"><div class="panelHead"><h2>Priority queue</h2><span id="priorityCount">Loading…</span></div><div class="priorities" id="priorityList"></div></section>
@@ -198,6 +198,21 @@ const GOOGLE_SCOPES=[
   "https://www.googleapis.com/auth/gmail.readonly",
   "https://www.googleapis.com/auth/gmail.send"
 ].join(" ");
+async function startVoiceCommand(){
+  const SpeechRecognition=window.SpeechRecognition||window.webkitSpeechRecognition;
+  if(!SpeechRecognition){toast("Voice unavailable","This browser does not provide speech recognition. Use a supported browser or the future MULTIWORK mobile app.");return}
+  const recognition=new SpeechRecognition(); recognition.lang="en-NG"; recognition.interimResults=false; recognition.maxAlternatives=1;
+  recognition.onstart=()=>toast("MULTIWORK listening","Tell me what you need.");
+  recognition.onerror=e=>toast("Voice stopped",e.error||"Speech recognition failed");
+  recognition.onresult=e=>{const text=e.results?.[0]?.[0]?.transcript||"";$("#command").value=text;askAI(text,"command")};
+  recognition.start();
+}
+async function requestNotifications(){
+  if(!("Notification" in window)){toast("Notifications unavailable","Your browser does not support notifications.");return}
+  const p=await Notification.requestPermission();
+  toast("Notifications",p==="granted"?"MULTIWORK can notify you about important attention items.":"Notifications remain off.");
+}
+
 async function connectGoogle(){
   if(!state.user){toast("Sign in required","Connect Google after entering your MULTIWORK workspace.");return}
   const {data,error}=await supabase.auth.linkIdentity({provider:"google",options:{scopes:GOOGLE_SCOPES,queryParams:{access_type:"offline",prompt:"consent"}}});
@@ -451,6 +466,8 @@ else return askAI(raw,target);
 $("#aiResult").classList.remove("hidden");$("#aiResult").innerHTML="<b>"+escapeHtml(title)+"</b><p>"+escapeHtml(msg)+"</p><div class='resultActions'><button class='primaryBtn' id='resultGo'>Open workspace</button></div>";$("#resultGo").onclick=()=>{setView(q.includes("people")?"people":q.includes("task")?"tasks":"today")};if(target==="command")toast(title,msg)}
 $("#ask").onclick=()=>commandAnswer($("#command").value,"command");
 $("#connectGoogle")?.addEventListener("click",connectGoogle);
+$("#voiceCommand")?.addEventListener("click",startVoiceCommand);
+$("#bell")?.addEventListener("click",requestNotifications);
 $("#syncAll")?.addEventListener("click",syncGoogle);
 $("#disconnectGoogle")?.addEventListener("click",async()=>{state.googleToken=null;state.googleConnected=false;await upsertIntegration("google","disconnected",[],{});updateIntegrationUI();toast("Google disconnected","MULTIWORK will no longer use Google context until you reconnect it.");});
 $("#openNotes")?.addEventListener("click",openNotes);
