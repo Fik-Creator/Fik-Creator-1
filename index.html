@@ -22,7 +22,7 @@ body:before{content:"";position:fixed;inset:0;pointer-events:none;background:rad
 @media(max-width:600px){.authPanel{padding:10px}.authCard{padding:20px 10px}.authCard h2{font-size:27px}.hero h1{font-size:34px}.hero p{font-size:12px}.command{padding-left:11px}.command .ask{padding:10px 11px}.suggestions{overflow-x:auto;flex-wrap:nowrap;padding-bottom:3px}.suggestion{white-space:nowrap}.row{align-items:flex-start;flex-direction:column}.rowActions{width:100%}.rowActions button{flex:1}.sectionTitle{align-items:flex-start;flex-direction:column}.sectionTitle .primaryBtn{width:100%}.item{grid-template-columns:4px 1fr auto}.item .tag{grid-column:2}.item .itemAction{grid-column:3;grid-row:1/3}.panelHead{padding:15px}.content{padding-left:13px;padding-right:13px}}
 
 /* MULTIWORK AI brand refinement */
-.logo b{letter-spacing:.04em}.logo b::after{content:""}.mark{background:linear-gradient(135deg,#16b9ff,#3678ff 48%,#9a4dff)!important}.authBrand{background:radial-gradient(circle at 78% 18%,rgba(154,77,255,.14),transparent 25%),linear-gradient(145deg,#070b16,#0b1220)}.brandCopy h1 span,.brandCopy h1 em{background:linear-gradient(90deg,#ffffff 20%,#53caff 60%,#b86cff);-webkit-background-clip:text;background-clip:text;color:transparent}.authAction,.primaryBtn{background:linear-gradient(90deg,#16b9ff,#3678ff 48%,#9a4dff)!important}.clerkCard{width:100%}#clerkAuthMount .cl-card{background:#0e1628!important;border-color:#1d2b46!important;box-shadow:none!important}#clerkAuthMount .cl-formButtonPrimary{background:linear-gradient(90deg,#3678ff,#9a4dff)!important}#clerkAuthMount .cl-headerTitle,#clerkAuthMount .cl-socialButtonsBlockButtonText,#clerkAuthMount .cl-formFieldLabel,#clerkAuthMount .cl-footerActionText{color:#f7f9ff!important}#clerkAuthMount .cl-formFieldInput{background:#0b1322!important;border-color:#253754!important;color:#fff!important}</style>
+.logo b{letter-spacing:.04em}.logo b::after{content:""}.mark{background:linear-gradient(135deg,#16b9ff,#3678ff 48%,#9a4dff)!important}.authBrand{background:radial-gradient(circle at 78% 18%,rgba(154,77,255,.14),transparent 25%),linear-gradient(145deg,#070b16,#0b1220)}.brandCopy h1 span,.brandCopy h1 em{background:linear-gradient(90deg,#ffffff 20%,#53caff 60%,#b86cff);-webkit-background-clip:text;background-clip:text;color:transparent}.authAction,.primaryBtn{background:linear-gradient(90deg,#16b9ff,#3678ff 48%,#9a4dff)!important}</style>
 </head>
 <body>
 <div id="loading" class="loading"><div class="loadingInner"><div class="mark">M</div><p>Preparing your executive workspace…</p></div></div>
@@ -33,7 +33,12 @@ body:before{content:"";position:fixed;inset:0;pointer-events:none;background:rad
     <div class="logo" style="margin-bottom:28px"><div class="mark">M</div><b>MULTIWORK AI</b></div>
     <div class="tabs"><button id="signInTab" class="active">Sign in</button><button id="signUpTab">Create account</button></div>
     <div id="authMessage"></div>
-    <div id="clerkAuthMount" style="min-height:330px"></div>
+    <form id="authForm" style="min-height:330px">
+      <div class="field"><label>EMAIL</label><input id="authEmail" type="email" autocomplete="email" placeholder="you@company.com" required></div>
+      <div class="field"><label>PASSWORD</label><input id="authPassword" type="password" autocomplete="current-password" placeholder="••••••••" minlength="8" required></div>
+      <div class="field hidden" id="nameField"><label>FULL NAME</label><input id="authName" type="text" autocomplete="name" placeholder="Your full name"></div>
+      <button class="authAction" id="authSubmit" type="submit">Sign in</button>
+    </form>
     
     <div class="authSwitch">By continuing, you agree to use MULTIWORK AI responsibly and keep your account secure.</div>
   </div></div>
@@ -77,13 +82,11 @@ body:before{content:"";position:fixed;inset:0;pointer-events:none;background:rad
 <div id="toast" class="toast"></div>
 
 <script type="module">
-const CLERK_CONFIG_ENDPOINT="/api/config";
 import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
 
 const SUPABASE_URL="https://cjsiwwbqbmviucpezglt.supabase.co";
 const SUPABASE_KEY="sb_publishable_lFUwGLc3b7qJ1U7rKomv1g_LKM7AQzp";
-let supabase=null;
-let clerk=null;
+let supabase=createClient(SUPABASE_URL,SUPABASE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
 
 const $=s=>document.querySelector(s), $$=s=>document.querySelectorAll(s);
 const state={user:null,profile:null,tasks:[],events:[],contacts:[],view:"today"};
@@ -100,46 +103,41 @@ function setMessage(kind,msg){$("#authMessage").innerHTML=msg?'<div class="'+kin
 function showAuth(mode="signin"){
   $("#authScreen").classList.remove("hidden");$("#appScreen").classList.add("hidden");
   const signup=mode==="signup";
-  $("#signInTab").classList.toggle("active",!signup);
-  $("#signUpTab").classList.toggle("active",signup);
-  setMessage("","");
-  if(clerk) setTimeout(()=>mountClerk(mode),20);
+  $("#signInTab").classList.toggle("active",!signup);$("#signUpTab").classList.toggle("active",signup);
+  $("#nameField").classList.toggle("hidden",!signup);$("#authSubmit").textContent=signup?"Create account":"Sign in";
+  $("#authPassword").autocomplete=signup?"new-password":"current-password";setMessage("","");
 }
 function showApp(){ $("#authScreen").classList.add("hidden");$("#appScreen").classList.remove("hidden") }
 function hideLoading(){ $("#loading").classList.add("hidden") }
-
-async function loadClerkScript(src){return await new Promise((resolve,reject)=>{const script=document.createElement("script");script.src=src;script.async=true;script.crossOrigin="anonymous";script.onload=resolve;script.onerror=()=>reject(new Error("Could not load Clerk"));document.head.appendChild(script)})}
-async function initClerk(){
-  const cfg=await fetch(CLERK_CONFIG_ENDPOINT,{cache:"no-store"}).then(r=>r.json());
-  if(!cfg.clerkPublishableKey){
-    showAuth("signin");hideLoading();setMessage("error","Clerk is not connected yet. Add CLERK_PUBLISHABLE_KEY in Vercel, then refresh.");
-    return false;
-  }
-  const clerkDomain=atob(cfg.clerkPublishableKey.split("_")[2]).slice(0,-1);
-  await loadClerkScript("https://"+clerkDomain+"/npm/@clerk/ui@1/dist/ui.browser.js");
-  await loadClerkScript("https://"+clerkDomain+"/npm/@clerk/clerk-js@6/dist/clerk.browser.js");
-  clerk=new window.Clerk(cfg.clerkPublishableKey);
-  await clerk.load({ui:{ClerkUI:window.__internal_ClerkUICtor},appearance:{variables:{colorPrimary:"#3678ff",colorForeground:"#f7f9ff",colorBackground:"#0e1628",colorInputBackground:"#0b1322",colorInputText:"#f7f9ff",colorTextSecondary:"#8794ae"},elements:{card:"clerkCard"}}});
-  supabase=createClient(SUPABASE_URL,SUPABASE_KEY,{auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false},accessToken:async()=>clerk.session?await clerk.session.getToken():null});
-  clerk.on("session",(session)=>{
-    if(session?.user){state.user={id:session.user.id,email:session.user.primaryEmailAddress?.emailAddress||"",name:session.user.fullName||session.user.firstName||"Executive",image_url:session.user.imageUrl};showApp();loadWorkspace().catch(err=>{console.error(err);toast("Workspace error",err.message)})}
-    else {state.user=null;state.profile=null;showAuth("signin")}
-  });
-  if(clerk.isSignedIn&&clerk.user){state.user={id:clerk.user.id,email:clerk.user.primaryEmailAddress?.emailAddress||"",name:clerk.user.fullName||clerk.user.firstName||"Executive",image_url:clerk.user.imageUrl};showApp();await loadWorkspace()}
+async function initAuth(){
+  const {data:{session}}=await supabase.auth.getSession();
+  if(session?.user){state.user={id:session.user.id,email:session.user.email||"",name:session.user.user_metadata?.full_name||session.user.email?.split("@")[0]||"Executive"};showApp();await loadWorkspace();}
   else showAuth("signin");
+  supabase.auth.onAuthStateChange(async(event,session)=>{
+    if(event==="SIGNED_IN"&&session?.user){state.user={id:session.user.id,email:session.user.email||"",name:session.user.user_metadata?.full_name||session.user.email?.split("@")[0]||"Executive"};showApp();try{await loadWorkspace()}catch(err){console.error(err);toast("Workspace error",err.message)}}
+    else if(event==="SIGNED_OUT"){state.user=null;state.profile=null;state.tasks=[];state.events=[];state.contacts=[];showAuth("signin")}
+  });
   hideLoading();
-  return true;
 }
-function mountClerk(mode){
-  if(!clerk)return;
-  const root=$("#clerkAuthMount");root.innerHTML="";
-  const appearance={variables:{colorPrimary:"#3678ff",colorBackground:"#0e1628",colorForeground:"#f7f9ff",colorTextSecondary:"#8794ae"}};
-  if(mode==="signup") clerk.mountSignUp(root,{appearance,signInUrl:"/",signUpForceRedirectUrl:"/",routing:"hash"});
-  else clerk.mountSignIn(root,{appearance,withSignUp:true,signUpUrl:"/",signInForceRedirectUrl:"/",routing:"hash"});
+async function handleAuthSubmit(e){
+  e.preventDefault();const email=$("#authEmail").value.trim(),password=$("#authPassword").value,signup=!$("#nameField").classList.contains("hidden"),name=$("#authName").value.trim();
+  if(!email||!password){setMessage("error","Enter your email and password.");return}
+  if(signup&&!name){setMessage("error","Enter your full name.");return}
+  const button=$("#authSubmit");button.disabled=true;button.textContent=signup?"Creating…":"Signing in…";setMessage("","");
+  try{
+    if(signup){
+      const {data,error}=await supabase.auth.signUp({email,password,options:{data:{full_name:name},emailRedirectTo:window.location.origin+window.location.pathname}});
+      if(error)throw error;
+      if(data.session){state.user={id:data.user.id,email:data.user.email||email,name};showApp();await loadWorkspace();}
+      else{showAuth("signin");setMessage("success","Account created. Check your email to confirm your account, then sign in.")}
+    }else{
+      const {data,error}=await supabase.auth.signInWithPassword({email,password});if(error)throw error;
+      state.user={id:data.user.id,email:data.user.email||email,name:data.user.user_metadata?.full_name||email.split("@")[0]};showApp();await loadWorkspace();
+    }
+  }catch(err){console.error(err);setMessage("error",err.message||"Authentication failed. Please try again.")}
+  finally{button.disabled=false;button.textContent=signup?"Create account":"Sign in"}
 }
-async function init(){
-  try{await initClerk()}catch(err){console.error(err);hideLoading();showAuth("signin");setMessage("error","MULTIWORK AI could not initialize secure authentication. Check the Clerk configuration in Vercel.");}
-}
+async function init(){try{await initAuth()}catch(err){console.error(err);hideLoading();showAuth("signin");setMessage("error","MULTIWORK AI could not initialize authentication. Please refresh and try again.")}}
 async function loadWorkspace(){
   const uid=state.user.id;
   const [profile,tasks,events,contacts]=await Promise.all([
@@ -212,7 +210,7 @@ async function delegateTask(id){const {error}=await supabase.from("tasks").updat
 async function removeContact(id){const {error}=await supabase.from("contacts").delete().eq("id",id).eq("user_id",state.user.id);if(error){toast("Could not remove",error.message);return}await loadWorkspace();toast("Removed","The person was removed from your workspace.")}
 async function addTask(){showModal("New task","Add a task to your executive queue.",`<div class="field"><label>TASK</label><input class="modalInput" id="newTitle" placeholder="What needs to be done?"></div><div class="field"><label>PRIORITY</label><select class="modalInput" id="newPriority"><option value="high">High</option><option value="normal" selected>Medium</option><option value="low">Low</option></select></div><div class="field"><label>DUE DATE</label><input class="modalInput" id="newDue" type="datetime-local"></div>`,"Create task");$("#modalPrimary").onclick=async()=>{const title=$("#newTitle").value.trim();if(!title){toast("Task name required","Give the task a name.");return}const due=$("#newDue").value?new Date($("#newDue").value).toISOString():null;const {error}=await supabase.from("tasks").insert({user_id:state.user.id,title,status:"open",priority:$("#newPriority").value,owner_type:"you",due_at:due});if(error){toast("Could not create",error.message);return}$("#modal").classList.remove("open");await loadWorkspace();toast("Task created",title+" is now in your queue.")}}
 async function addPerson(){showModal("Add person","Keep an important relationship in your executive workspace.",`<div class="field"><label>NAME</label><input class="modalInput" id="personName" placeholder="Full name"></div><div class="field"><label>ROLE</label><input class="modalInput" id="personRole" placeholder="Role"></div><div class="field"><label>COMPANY</label><input class="modalInput" id="personCompany" placeholder="Company"></div><div class="field"><label>NOTES</label><input class="modalInput" id="personNotes" placeholder="Anything useful to remember"></div>`,"Add person");$("#modalPrimary").onclick=async()=>{const name=$("#personName").value.trim();if(!name){toast("Name required","Add a name.");return}const {error}=await supabase.from("contacts").insert({user_id:state.user.id,full_name:name,role:$("#personRole").value.trim()||null,company:$("#personCompany").value.trim()||null,notes:$("#personNotes").value.trim()||null});if(error){toast("Could not add",error.message);return}$("#modal").classList.remove("open");await loadWorkspace();toast("Person added",name+" is now part of your network.")}}
-async function addWork(){showModal("New work item","Create a workstream or decision.",`<div class="field"><label>NAME</label><input class="modalInput" id="workTitle" placeholder="Acquisition, contract review…"></div><div class="field"><label>DESCRIPTION</label><input class="modalInput" id="workDesc" placeholder="What is this about?"></div>`,"Create");$("#modalPrimary").onclick=async()=>{const title=$("#workTitle").value.trim();if(!title){toast("Name required","Give the work item a name.");return}const {error}=await supabase.from("tasks").insert({user_id:state.user.id,title,description:$("#workDesc").value.trim()||null,status:"open",priority:"high",owner_type:"work"});if(error){toast("Could not create",error.message);return}$("#modal").classList.remove("open");await loadWorkspace();setView("work");toast("Work item created",title+" is now active.")}}
+async function addWork(){showModal("New work item","Create a workstream or decision.",`<div class="field"><label>NAME</label><input class="modalInput" id="workTitle" placeholder="Acquisition, contract review…"></div><div class="field"><label>DESCRIPTION</label><input class="modalInput" id="workDesc" placeholder="What is this about?"></div>`,"Create");$("#modalPrimary").onclick=async()=>{const title=$("#workTitle").value.trim();if(!title){toast("Name required","Give the work item a name.");return}const {error}=await supabase.from("tasks").insert({user_id:state.user.id,title,description:$("#workDesc").value.trim()||null,status:"open",priority:"high",owner_type:"you"});if(error){toast("Could not create",error.message);return}$("#modal").classList.remove("open");await loadWorkspace();setView("work");toast("Work item created",title+" is now active.")}}
 function summarizeTask(id){const t=state.tasks.find(x=>x.id===id);if(!t)return;showModal("Executive summary",t.title,`<div style="color:#999ca4;font-size:12px;line-height:1.7"><b>Priority:</b> ${escapeHtml(t.priority||"normal")}<br><b>Status:</b> ${escapeHtml(t.status||"open")}<br><b>Owner:</b> ${escapeHtml(t.owner_type||"YOU")}<br><b>Next step:</b> ${escapeHtml(t.description||"Review this item and decide the next action.")}</div>`,"Close");$("#modalPrimary").onclick=()=>$("#modal").classList.remove("open")}
 function showModal(title,text,body,action){$("#modalTitle").textContent=title;$("#modalText").textContent=text;$("#modalBody").innerHTML=body;$("#modalPrimary").textContent=action||"Done";$("#modalCancel").classList.remove("hidden");$("#modal").classList.add("open")}
 function setView(name){state.view=name;$$(".view").forEach(v=>v.classList.remove("active"));$("#view-"+name).classList.add("active");$$(".nav button").forEach(b=>b.classList.toggle("active",b.dataset.view===name));$("#crumb").textContent=name==="today"?"Today":name==="ask"?"Ask MULTI":name[0].toUpperCase()+name.slice(1);if(name==="ask")setTimeout(()=>$("#command2").focus(),60)}
@@ -226,12 +224,11 @@ $("#aiResult").classList.remove("hidden");$("#aiResult").innerHTML="<b>"+escapeH
 $("#ask").onclick=()=>commandAnswer($("#command").value,"command");$("#ask2").onclick=()=>commandAnswer($("#command2").value,"ask");$("#command").addEventListener("keydown",e=>{if(e.key==="Enter")commandAnswer($("#command").value,"command")});$("#command2").addEventListener("keydown",e=>{if(e.key==="Enter")commandAnswer($("#command2").value,"ask")});$$(".suggestion").forEach(b=>b.onclick=()=>{$("#command").value=b.dataset.prompt;commandAnswer(b.dataset.prompt,"command")});
 $$(".nav button").forEach(b=>b.onclick=()=>setView(b.dataset.view));$("#newTask").onclick=addTask;$("#addPerson").onclick=addPerson;$("#newWork").onclick=addWork;$("#modalCancel").onclick=()=>$("#modal").classList.remove("open");$("#modal").addEventListener("click",e=>{if(e.target.id==="modal")$("#modal").classList.remove("open")});
 $("#bell").onclick=()=>showModal("Notifications","Your current workspace has no urgent notifications.","<div class='empty'>You’re all clear.</div>","Close");$("#modalPrimary").onclick=()=>$("#modal").classList.remove("open");
-$("#logout").onclick=async()=>{await clerk.signOut();toast("Signed out","Your MULTIWORK AI session has been securely closed.")};
 
-let authMode="signin";
-$("#signInTab").onclick=()=>{authMode="signin";if(clerk)mountClerk("signin")};
-$("#signUpTab").onclick=()=>{authMode="signup";if(clerk)mountClerk("signup")};
-$("#logout").onclick=async()=>{if(clerk)await clerk.signOut();else showAuth("signin")};
+$("#signInTab").onclick=()=>showAuth("signin");
+$("#signUpTab").onclick=()=>showAuth("signup");
+$("#authForm").addEventListener("submit",handleAuthSubmit);
+$("#logout").onclick=async()=>{await supabase.auth.signOut();toast("Signed out","Your MULTIWORK AI session has been securely closed.")};
 init();
 </script>
 </body></html>
