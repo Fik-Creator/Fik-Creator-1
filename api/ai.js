@@ -26,7 +26,7 @@ export default async function handler(req,res){
       Authorization:"Bearer "+process.env.OPENAI_API_KEY
     },
     body:JSON.stringify({
-      model:process.env.OPENAI_MODEL||"gpt-6-astra",
+      model:process.env.OPENAI_MODEL||"gpt-6-luna",
       instructions:"You are MULTIWORK AI, an executive operating system. Use only the supplied workspace context for personal facts. Be concise, practical and action-oriented. Never invent meetings, people, emails, tasks or notes. If context is missing, say so and tell the user what connection or permission is needed. Do not execute sensitive actions from this endpoint; return a proposed action for the app to confirm.",
       input:[
         {role:"user",content:[{type:"input_text",text:"Workspace context:\n"+context+"\n\nUser request:\n"+message}]}
