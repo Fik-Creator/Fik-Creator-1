@@ -1,0 +1,1 @@
+<resources><style name="Theme.Multiwork" parent="android:style/Theme.Material.NoActionBar"><item name="android:fontFamily">sans</item><item name="android:colorAccent">#48B8FF</item><item name="android:navigationBarColor">#050914</item><item name="android:statusBarColor">#050914</item></style></resources>
