@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>MULTIWORK AI — Your work. Smarter.</title><meta name="theme-color" content="#080d17"><link rel="icon" type="image/svg+xml" href="assets/multiwork-mark.svg">
-<meta name="description" content="Your work, intelligently organized.">
-<meta name="theme-color" content="#070708">
+<meta name="description" content="MULTIWORK AI — an intelligent command center for your work, priorities, people and schedule.">
+<meta name="color-scheme" content="dark">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
 <style>
@@ -161,16 +161,38 @@ async function handleAuthSubmit(e){
     if(signup){
       const {data,error}=await supabase.auth.signUp({email,password,options:{data:{full_name:name},emailRedirectTo:window.location.origin+window.location.pathname}});
       if(error)throw error;
-      if(data.session){state.user={id:data.user.id,email:data.user.email||email,name};showApp();await loadWorkspace();}
-      else{showAuth("signin");setMessage("success","Account created. Check your email to confirm your account, then sign in.")}
+      if(data.session){state.user={id:data.user.id,email:data.user.email||email,name};showApp();await loadWorkspace();toast("Welcome to MULTIWORK AI","Your executive workspace is ready.");}
+      else if(data.user){
+        showAuth("signin");
+        setMessage("error","Your account was created, but email confirmation is still enabled in the authentication settings. Turn off Confirm Email in Supabase Auth settings for instant access, then sign in again.");
+      }else{
+        showAuth("signup");
+        setMessage("error","MULTIWORK AI could not create the account. Please try again.");
+      }
     }else{
       const {data,error}=await supabase.auth.signInWithPassword({email,password});if(error)throw error;
       state.user={id:data.user.id,email:data.user.email||email,name:data.user.user_metadata?.full_name||email.split("@")[0]};showApp();await loadWorkspace();
     }
-  }catch(err){console.error(err);setMessage("error",err.message||"Authentication failed. Please try again.")}
+  }catch(err){
+    console.error("MULTIWORK auth error:",err);
+    const message=String(err?.message||"Authentication failed. Please try again.");
+    const friendly=message.toLowerCase().includes("rate limit")?"Too many attempts right now. Wait a minute and try again."
+      :message.toLowerCase().includes("already registered")?"An account with this email already exists. Switch to Sign in."
+      :message.toLowerCase().includes("password")?"Use a stronger password with at least 8 characters."
+      :message;
+    setMessage("error",friendly);
+  }
   finally{button.disabled=false;button.textContent=signup?"Create account":"Sign in"}
 }
-async function init(){try{await initAuth()}catch(err){console.error(err);hideLoading();showAuth("signin");setMessage("error","MULTIWORK AI could not initialize authentication. Please refresh and try again.")}}
+async function init(){
+  try{await initAuth();}
+  catch(err){
+    console.error("MULTIWORK initialization error:",err);
+    hideLoading();
+    showAuth("signin");
+    setMessage("error","MULTIWORK AI could not connect to your workspace. Check your connection and refresh.");
+  }
+}
 async function loadWorkspace(){
   const uid=state.user.id;
   const [profile,tasks,events,contacts]=await Promise.all([
