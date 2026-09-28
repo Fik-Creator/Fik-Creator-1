@@ -156,7 +156,7 @@ const SUPABASE_KEY="sb_publishable_lFUwGLc3b7qJ1U7rKomv1g_LKM7AQzp";
 let supabase=createClient(SUPABASE_URL,SUPABASE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
 
 const $=s=>document.querySelector(s), $$=s=>document.querySelectorAll(s);
-const state={user:null,profile:null,tasks:[],events:[],contacts:[],external:[],notes:[],integrations:[],googleToken:null,view:"today"};
+const state={user:null,profile:null,tasks:[],events:[],contacts:[],external:[],notes:[],integrations:[],googleToken:null,googleRefreshToken:null,googleConnected:false,voiceListening:false,view:"today"};
 
 function toast(title,msg){const t=$("#toast");t.innerHTML="<b>"+escapeHtml(title)+"</b>"+escapeHtml(msg);t.classList.add("show");clearTimeout(window.__toast);window.__toast=setTimeout(()=>t.classList.remove("show"),3800)}
 function escapeHtml(v){return String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[c]))}
@@ -195,29 +195,31 @@ function captureProviderToken(session){
   if(session?.provider_refresh_token) state.googleRefreshToken=session.provider_refresh_token;
   if(session?.user && session.user.app_metadata?.provider==="google") state.googleConnected=true;
 }
-const GOOGLE_SCOPES=["https://www.googleapis.com/auth/calendar.events.readonly","https://www.googleapis.com/auth/contacts.readonly","https://www.googleapis.com/auth/gmail.readonly"].join(" ");
+const GOOGLE_SCOPES=["openid","email","profile","https://www.googleapis.com/auth/calendar.events.readonly","https://www.googleapis.com/auth/contacts.readonly","https://www.googleapis.com/auth/gmail.readonly"].join(" ");
 function speakAssistant(text){
   if(!("speechSynthesis" in window)||!text)return;
   try{window.speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(text.slice(0,1200));u.lang="en-NG";u.rate=.98;u.pitch=1;window.speechSynthesis.speak(u)}catch{}
 }
-async function startVoiceCommand(){
+async function speakAssistant(text){
+  if(!("speechSynthesis" in window)||!text)return;
+  try{window.speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(String(text).slice(0,1200));u.lang="en-NG";u.rate=.96;u.pitch=1;window.speechSynthesis.speak(u)}catch{}
+}
+function startVoiceCommand(){
   const SpeechRecognition=window.SpeechRecognition||window.webkitSpeechRecognition;
-  if(!SpeechRecognition){
-    toast("Voice unavailable","Speech recognition is not available in this browser. The MULTIWORK mobile companion will provide deeper device-level voice support.");
-    return;
-  }
+  if(!SpeechRecognition){toast("Voice unavailable","Speech recognition is not available in this browser. MULTIWORK Mobile will provide deeper device-level voice controls.");return}
+  if(state.voiceListening)return;
   const recognition=new SpeechRecognition();
-  recognition.lang="en-NG";recognition.interimResults=false;recognition.maxAlternatives=1;
-  recognition.onstart=()=>{ $("#voiceCommand").textContent="◉"; toast("MULTIWORK listening","Tell me what you need."); };
-  recognition.onerror=e=>toast("Voice stopped",e.error||"Speech recognition failed");
-  recognition.onend=()=>{ $("#voiceCommand").textContent="◉"; };
+  recognition.lang="en-NG";recognition.interimResults=false;recognition.continuous=false;recognition.maxAlternatives=1;
+  const btn=$("#voiceCommand");state.voiceListening=true;btn?.classList.add("listening");if(btn)btn.textContent="●";
+  recognition.onstart=()=>toast("MULTIWORK is listening","Say a task, question, or command.");
   recognition.onresult=e=>{
     const spoken=e.results?.[0]?.[0]?.transcript?.trim()||"";
-    if(!spoken)return;
-    $("#command").value=spoken;
-    askAI(spoken,"voice");
+    if(!spoken){toast("I didn't catch that","Try speaking again.");return}
+    $("#command").value=spoken;commandAnswer(spoken,"command",{voice:true});
   };
-  try{recognition.start()}catch{}
+  recognition.onerror=e=>toast("Voice stopped",e.error==="not-allowed"?"Microphone permission was denied.":(e.error||"Speech recognition failed"));
+  recognition.onend=()=>{state.voiceListening=false;btn?.classList.remove("listening");if(btn)btn.textContent="◉"};
+  try{recognition.start()}catch(err){state.voiceListening=false;btn?.classList.remove("listening");if(btn)btn.textContent="◉";toast("Voice unavailable",err.message)}
 }
 async function requestNotifications(){
   if(!("Notification" in window)){toast("Notifications unavailable","Your browser does not support notifications.");return}
@@ -291,7 +293,7 @@ async function syncGoogle(){
   }
 }
 function updateIntegrationUI(){
-  const connected=!!state.googleToken||state.integrations.some(x=>x.provider==="google"&&x.status==="connected");
+  const connected=!!state.googleToken||state.googleConnected||state.integrations.some(x=>x.provider==="google"&&x.status==="connected");
   ["dotCalendar","dotContacts","dotGmail"].forEach(id=>$( "#"+id)?.classList.toggle("on",connected));
   ["statusCalendar","statusContacts","statusGmail"].forEach(id=>{const el=$("#"+id);if(el)el.textContent=connected?"Connected":"Waiting for Google"});
   const btn=$("#connectGoogle");if(btn){btn.textContent=connected?"Sync Google":"Connect Google";btn.classList.toggle("connected",connected);btn.onclick=connected?syncGoogle:connectGoogle}
