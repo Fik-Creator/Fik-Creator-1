@@ -213,6 +213,7 @@ function updateWakeButton(){
   b.classList.toggle("active",state.wakeEnabled||state.wakeListening);
 }
 function openVoiceAssistant(){
+  stopWakeWord();
   const input=$("#command"); input?.focus(); $("#voiceCommand")?.click();
 }
 function stopWakeWord(){
@@ -269,7 +270,10 @@ function startVoiceCommand(){
     $("#command").value=spoken;commandAnswer(spoken,"command",{voice:true});
   };
   recognition.onerror=e=>toast("Voice stopped",e.error==="not-allowed"?"Microphone permission was denied.":(e.error||"Speech recognition failed"));
-  recognition.onend=()=>{state.voiceListening=false;btn?.classList.remove("listening");if(btn)btn.textContent="◉"};
+  recognition.onend=()=>{
+  state.voiceListening=false;btn?.classList.remove("listening");if(btn)btn.textContent="◉";
+  if(state.wakeEnabled&&!document.hidden) setTimeout(startWakeWord,700);
+};
   try{recognition.start()}catch(err){state.voiceListening=false;btn?.classList.remove("listening");if(btn)btn.textContent="◉";toast("Voice unavailable",err.message)}
 }
 async function requestNotifications(){
