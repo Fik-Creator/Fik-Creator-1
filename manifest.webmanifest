@@ -1,0 +1,10 @@
+{
+  "name":"MULTIWORK AI",
+  "short_name":"MULTIWORK",
+  "start_url":"/",
+  "display":"standalone",
+  "background_color":"#07101f",
+  "theme_color":"#07101f",
+  "description":"Executive operating system for work, priorities, people and decisions.",
+  "icons":[]
+}
