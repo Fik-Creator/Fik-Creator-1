@@ -32,7 +32,7 @@ class OverlayReminderService : Service() {
                 .setContentText("A reminder is active.")
                 .setOngoing(false)
                 .build(),
-            if (Build.VERSION.SDK_INT >= 29) android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_SHORT_SERVICE else 0
+            if (Build.VERSION.SDK_INT >= 34) android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_SHORT_SERVICE else 0
         )
     }
 
