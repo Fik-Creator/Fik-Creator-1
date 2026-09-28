@@ -21,6 +21,24 @@ body:before{content:"";position:fixed;inset:0;pointer-events:none;background:rad
 @media(max-width:1000px){.auth{grid-template-columns:1fr}.authBrand{display:none}.authPanel{min-height:100vh}.authCard{padding:22px}.app{grid-template-columns:1fr}.sidebar{height:auto;position:fixed;left:0;right:0;bottom:0;top:auto;border-right:0;border-top:1px solid var(--line);padding:8px 10px;z-index:20}.sidebar .brand,.sideBottom{display:none}.nav{grid-template-columns:repeat(5,1fr);gap:3px}.nav button{justify-content:center;padding:8px 4px;font-size:9px;flex-direction:column;gap:3px}.nav button span:last-child{display:block}.nav button.active{box-shadow:inset 0 2px var(--red)}.main{padding-bottom:67px}.top{padding:0 18px}.content{padding:28px 18px 45px}.hero{align-items:flex-start;flex-direction:column}.status{width:100%}.grid{grid-template-columns:1fr}.bottom{grid-template-columns:1fr}.datePill{display:none}}
 @media(max-width:600px){.authPanel{padding:10px}.authCard{padding:20px 10px}.authCard h2{font-size:27px}.hero h1{font-size:34px}.hero p{font-size:12px}.command{padding-left:11px}.command .ask{padding:10px 11px}.suggestions{overflow-x:auto;flex-wrap:nowrap;padding-bottom:3px}.suggestion{white-space:nowrap}.row{align-items:flex-start;flex-direction:column}.rowActions{width:100%}.rowActions button{flex:1}.sectionTitle{align-items:flex-start;flex-direction:column}.sectionTitle .primaryBtn{width:100%}.item{grid-template-columns:4px 1fr auto}.item .tag{grid-column:2}.item .itemAction{grid-column:3;grid-row:1/3}.panelHead{padding:15px}.content{padding-left:13px;padding-right:13px}}
 
+
+/* Pitch-ready pricing + conversion layer */
+.pricingStrip{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:26px 0 0;max-width:760px}
+.priceCard{border:1px solid rgba(120,145,190,.2);background:rgba(11,18,32,.72);backdrop-filter:blur(12px);border-radius:14px;padding:15px}
+.priceCard.featured{border-color:rgba(83,202,255,.55);box-shadow:0 0 35px rgba(22,185,255,.08)}
+.priceCard .priceLabel{font-size:9px;text-transform:uppercase;letter-spacing:.14em;color:#7f8da7;font-weight:700}
+.priceCard h3{font-family:Manrope;font-size:17px;margin:6px 0 3px}
+.priceCard .price{font-family:Manrope;font-size:22px;letter-spacing:-.04em}
+.priceCard .price small{font-family:"DM Sans";font-size:9px;color:#7f8da7;font-weight:400;letter-spacing:0}
+.priceCard p{font-size:9px;line-height:1.5;color:#78869f;margin:7px 0 0}
+.priceBadge{display:inline-block;color:#75d8ff;background:rgba(22,185,255,.1);border:1px solid rgba(22,185,255,.18);border-radius:999px;padding:4px 7px;font-size:8px;margin-bottom:5px}
+.pitchLine{font-size:10px;color:#8190a9;margin-top:15px}
+.pitchLine strong{color:#dce8fa}
+.authTrust{display:flex;gap:12px;flex-wrap:wrap;margin-top:18px;color:#71809a;font-size:9px}
+.authTrust span:before{content:"✓";color:#4ade9b;margin-right:5px}
+.demoBtn{border:1px solid #2b466b;background:rgba(13,25,44,.7);color:#cfe4ff;border-radius:9px;padding:10px 14px;font-size:11px;font-weight:600;margin-top:12px}
+@media(max-width:760px){.pricingStrip{grid-template-columns:1fr}.priceCard.featured{order:-1}}
+
 /* MULTIWORK AI brand refinement */
 .logo b{letter-spacing:.04em}.logo b::after{content:""}.mark{background:linear-gradient(135deg,#16b9ff,#3678ff 48%,#9a4dff)!important}.authBrand{background:radial-gradient(circle at 78% 18%,rgba(154,77,255,.14),transparent 25%),linear-gradient(145deg,#070b16,#0b1220)}.brandCopy h1 span,.brandCopy h1 em{background:linear-gradient(90deg,#ffffff 20%,#53caff 60%,#b86cff);-webkit-background-clip:text;background-clip:text;color:transparent}.authAction,.primaryBtn{background:linear-gradient(90deg,#16b9ff,#3678ff 48%,#9a4dff)!important}</style>
 </head>
@@ -28,10 +46,18 @@ body:before{content:"";position:fixed;inset:0;pointer-events:none;background:rad
 <div id="loading" class="loading"><div class="loadingInner"><div class="mark">M</div><p>Preparing your executive workspace…</p></div></div>
 
 <section id="authScreen" class="screen auth hidden">
-  <div class="authBrand"><div class="logo"><div class="mark">M</div><b>MULTIWORK AI</b></div><div class="brandCopy"><div class="eyebrow">Executive command center</div><h1>Your day.<br>Under control.</h1><p>MULTIWORK AI brings your priorities, people, work and schedule into one private command center — customized around the way you operate.</p></div><div class="brandFoot">Private workspace · Built for focused executives</div></div>
+  <div class="authBrand"><div class="logo"><div class="mark">M</div><b>MULTIWORK AI</b></div><div class="brandCopy"><div class="eyebrow">Executive operating system</div><h1>Your day.<br><span>Under control.</span></h1><p>MULTIWORK AI brings your priorities, people, work and schedule into one private command center — customized around the way you operate.</p><div class="pricingStrip">
+  <div class="priceCard"><div class="priceLabel">Basic</div><h3>Free</h3><div class="price">₦0 <small>forever</small></div><p>Core tasks, people and a lightweight AI workspace.</p></div>
+  <div class="priceCard featured"><div class="priceBadge">Most accessible</div><div class="priceLabel">Executive</div><h3>Full MULTIWORK</h3><div class="price">₦49,000 <small>/ year</small></div><p>Full workspace, deeper AI assistance and executive organization.</p></div>
+  <div class="priceCard"><div class="priceLabel">Business</div><h3>For teams</h3><div class="price">₦149,000 <small>/ year+</small></div><p>Shared operating workflows, team visibility and custom setup.</p></div>
+</div><div class="pitchLine"><strong>Start free.</strong> Upgrade only when MULTIWORK becomes part of how you work.</div><div class="authTrust"><span>No credit card to start</span><span>Private workspace</span><span>Cancel anytime</span></div></div><div class="brandFoot">MULTIWORK AI · Executive infrastructure for everyday work</div></div>
   <div class="authPanel"><div class="authCard">
     <div class="logo" style="margin-bottom:28px"><div class="mark">M</div><b>MULTIWORK AI</b></div>
     <div class="tabs"><button id="signInTab" class="active">Sign in</button><button id="signUpTab">Create account</button></div>
+<div style="display:flex;justify-content:space-between;align-items:center;margin:-8px 0 18px">
+  <span style="font-size:10px;color:#717783">New here? Start with the free workspace.</span>
+  <button class="demoBtn" id="demoBtn" type="button">View demo</button>
+</div>
     <div id="authMessage"></div>
     <form id="authForm" style="min-height:330px">
       <div class="field"><label>EMAIL</label><input id="authEmail" type="email" autocomplete="email" placeholder="you@company.com" required></div>
@@ -225,8 +251,31 @@ $("#ask").onclick=()=>commandAnswer($("#command").value,"command");$("#ask2").on
 $$(".nav button").forEach(b=>b.onclick=()=>setView(b.dataset.view));$("#newTask").onclick=addTask;$("#addPerson").onclick=addPerson;$("#newWork").onclick=addWork;$("#modalCancel").onclick=()=>$("#modal").classList.remove("open");$("#modal").addEventListener("click",e=>{if(e.target.id==="modal")$("#modal").classList.remove("open")});
 $("#bell").onclick=()=>showModal("Notifications","Your current workspace has no urgent notifications.","<div class='empty'>You’re all clear.</div>","Close");$("#modalPrimary").onclick=()=>$("#modal").classList.remove("open");
 
+
+function loadDemo(){
+  state.user={id:"demo",email:"demo@multiwork.ai",name:"Alex Morgan"};
+  state.profile={full_name:"Alex Morgan",role:"Founder & CEO",company:"Northstar Labs",timezone:"Africa/Lagos",onboarding_completed:true};
+  state.tasks=[
+    {id:"d1",title:"Review investor proposal",status:"open",priority:"high",owner_type:"you",due_at:new Date(Date.now()+3600000).toISOString()},
+    {id:"d2",title:"Approve Q4 campaign",status:"open",priority:"normal",owner_type:"you",due_at:new Date(Date.now()+86400000).toISOString()},
+    {id:"d3",title:"Send design brief",status:"delegated",priority:"high",owner_type:"delegate",due_at:null}
+  ];
+  const base=new Date();base.setHours(10,0,0,0);
+  state.events=[
+    {id:"e1",title:"Leadership stand-up",starts_at:base.toISOString(),location:"Executive room"},
+    {id:"e2",title:"Investor call",starts_at:new Date(base.getTime()+2*3600000).toISOString(),location:"Video conference"},
+    {id:"e3",title:"Product review",starts_at:new Date(base.getTime()+5*3600000).toISOString(),location:"Northstar Labs"}
+  ];
+  state.contacts=[
+    {id:"p1",full_name:"Maya Okafor",role:"Operations Lead",company:"Northstar Labs"},
+    {id:"p2",full_name:"Daniel Reed",role:"Investor",company:"Summit Capital"}
+  ];
+  showApp();renderAll();toast("Interactive demo","You’re exploring MULTIWORK with sample executive data.");hideLoading();
+}
+
 $("#signInTab").onclick=()=>showAuth("signin");
 $("#signUpTab").onclick=()=>showAuth("signup");
+$("#demoBtn").onclick=loadDemo;
 $("#authForm").addEventListener("submit",handleAuthSubmit);
 $("#logout").onclick=async()=>{await supabase.auth.signOut();toast("Signed out","Your MULTIWORK AI session has been securely closed.")};
 init();
