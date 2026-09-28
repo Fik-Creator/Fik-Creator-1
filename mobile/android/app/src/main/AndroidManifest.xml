@@ -4,10 +4,15 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MICROPHONE"/>
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW"/>
+    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM"/>
+
     <application android:theme="@style/Theme.Multiwork" android:label="MULTIWORK AI" android:allowBackup="false" android:supportsRtl="true">
         <activity android:name=".MainActivity" android:exported="true">
             <intent-filter><action android:name="android.intent.action.MAIN"/><category android:name="android.intent.category.LAUNCHER"/></intent-filter>
         </activity>
         <service android:name=".WakeWordService" android:exported="false" android:foregroundServiceType="microphone"/>
+        <service android:name=".OverlayReminderService" android:exported="false" android:foregroundServiceType="shortService"/>
+        <receiver android:name=".ReminderReceiver" android:exported="false"/>
     </application>
 </manifest>
