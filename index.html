@@ -1339,7 +1339,7 @@ function startVoiceCommand(fromWake=false,announce=true,session=true){
 async function voiceHandleUtterance(spoken){
   const clean=stripWakePrefix(spoken).trim();if(!clean)return;
   const tone=detectVoiceTone(clean);
-  state.conversationHistory.push({speaker:"user",text:clean,tone,at:new Date().toISOString()});state.conversationHistory=state.conversationHistory.slice(-24);
+  state.conversationHistory.push({speaker:"user",text:clean,tone,at:new Date().toISOString()});state.conversationHistory=state.conversationHistory.slice(-24);saveChatMessage("user",clean,{source:"voice"}).catch(()=>{});
   if(/^(stop|stop listening|stop voice|cancel assistant|go quiet|be quiet)$/i.test(clean)){stopVoiceCommand(true);return}
   setVoiceHint("MULTIWORK is working on that…");
   try{await commandAnswer(clean,"voice",{voice:true,voiceTone:tone})}catch(e){try{await askAI(clean,"voice",{voice:true,voiceTone:tone})}catch(err){speakColleague("I couldn’t complete that request. Please try again.")}}
@@ -1392,7 +1392,16 @@ async function sendChat(text,options={}){
 }
 function socialAwayReply(){return "Thanks for reaching out. I’m currently away from this conversation and may not be able to respond immediately. I’ve seen your message and I’ll get back to you as soon as possible."}
 async function draftProfessionalReply(){
-  const reply=socialAwayReply();
+  let reply=socialAwayReply();
+  try{
+    const session=(await supabase.auth.getSession()).data.session;
+    if(session){
+      const res=await fetch(MULTIWORK_API_URL,{method:"POST",headers:{"Content-Type":"application/json",Authorization:"Bearer "+session.access_token},body:JSON.stringify({message:"Prepare a brief, warm, professional response to a chat from someone contacting me while I am away. Say I have seen their message and will get back as soon as possible. Preserve my executive tone; do not claim a specific timeline.",context:{profile:state.profile,conversation:state.conversationHistory.slice(-10)},mode:"assistant"})});
+      const data=await res.json().catch(()=>({}));
+      if(res.ok&&data.output)reply=String(data.output).trim();
+    }
+  }catch{}
+  saveChatMessage("assistant",reply,{source:"social_reply_draft"}).catch(()=>{});
   showModal("Professional reply draft","MULTIWORK prepared this for your approval.",'<textarea id="replyDraft" class="modalInput" style="min-height:120px">'+escapeHtml(reply)+'</textarea><div style="font-size:10px;color:#7f8ea8;margin-top:7px">MULTIWORK will not silently send external messages.</div>','Copy reply');
   $("#modalPrimary").onclick=async()=>{try{await navigator.clipboard?.writeText($("#replyDraft").value);toast("Reply copied","Paste it into the conversation you want to answer.");}catch{toast("Copy blocked","Select and copy the draft manually.")}};
   return reply;
