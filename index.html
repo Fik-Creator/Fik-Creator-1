@@ -716,7 +716,10 @@ async function askAI(raw,target,options={}){
   }
 }
 
-function commandAnswer(raw,target,options={}){const q=raw.trim().toLowerCase();if(!q){toast("Ask MULTI","Tell me what you need.");return}let title="MULTIWORK AI",msg="I can act on your workspace data now.";if(q.startsWith("remind me to ")||q.startsWith("remember to ")){
+function commandAnswer(raw,target,options={}){const q=raw.trim().toLowerCase();if(!q){toast("Ask MULTI","Tell me what you need.");return}
+if(/\b(connect|link|add)\b.*\b(gmail|google)\b/.test(q)){connectGoogle();return}
+if(/\b(sync|refresh)\b.*\b(gmail|google)\b/.test(q)){syncGoogle();return}
+let title="MULTIWORK AI",msg="I can act on your workspace data now.";if(q.startsWith("remind me to ")||q.startsWith("remember to ")){
   const title=raw.replace(/^remind me to |^remember to /i,"").trim();
   if(!title){toast("Tell me what to remember","Say something like: remind me to call Daniel.");return}
   showModal("Create reminder task","I can add this to your executive queue.",'<div style="color:#aeb8c9;font-size:12px;line-height:1.7">MULTIWORK will save <b style="color:#fff">'+escapeHtml(title)+'</b> as an open task. You can add a due date before saving.</div><div class="field" style="margin-top:14px"><label>DUE DATE</label><input class="modalInput" id="voiceDue" type="datetime-local"></div>','Save reminder');
