@@ -4,7 +4,7 @@
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>MULTIWORK AI — Your work. Smarter.</title><meta name="theme-color" content="#080d17"><link rel="icon" type="image/svg+xml" href="assets/multiwork-mark.svg">
 <meta name="description" content="MULTIWORK AI — an intelligent command center for your work, priorities, people and schedule.">
-<meta name="color-scheme" content="dark"><meta name="multiwork-build" content="2026-09-29-colleague-voice-v1">
+<meta name="color-scheme" content="dark"><meta name="multiwork-build" content="2026-09-29-executive-os-v2">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
 <style>
@@ -56,6 +56,46 @@ body:before{content:"";position:fixed;inset:0;pointer-events:none;background:rad
 .contextSummary{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:14px}.contextStat{border:1px solid #22334f;background:#0d1626;border-radius:11px;padding:12px}.contextStat b{font-family:Manrope;font-size:19px}.contextStat span{display:block;color:#72819a;font-size:8px;text-transform:uppercase;letter-spacing:.1em;margin-top:3px}
 .noteBox{width:100%;min-height:170px;border:1px solid #2c3d59;background:#0b1220;color:#eaf2ff;border-radius:11px;padding:13px;outline:0;resize:vertical;font:inherit;font-size:11px;line-height:1.6}
 @media(max-width:760px){.integrationGrid{grid-template-columns:1fr}.contextSummary{grid-template-columns:repeat(2,1fr)}.syncBar{align-items:flex-start;flex-direction:column}}
+
+/* MULTIWORK executive interaction layer */
+button{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+.nav button{width:100%;position:relative;z-index:30}
+.chatShell{display:grid;grid-template-columns:255px minmax(0,1fr);min-height:560px;border:1px solid var(--line);border-radius:18px;background:rgba(12,20,34,.72);overflow:hidden}
+.chatHistory{border-right:1px solid var(--line);padding:14px;background:rgba(7,12,22,.7);overflow:auto}
+.chatHistoryHead{display:flex;justify-content:space-between;color:#7d8aa3;font-size:10px;text-transform:uppercase;letter-spacing:.14em;padding:7px 7px 12px}
+.conversationItem{display:block;width:100%;text-align:left;background:transparent;border:1px solid transparent;color:#dce6f6;padding:11px;border-radius:11px;margin-bottom:6px}
+.conversationItem:hover,.conversationItem.active{background:#121e34;border-color:#29405f}
+.conversationItem b{display:block;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.conversationItem small{display:block;color:#71809a;margin-top:4px;font-size:10px}
+.chatPane{display:flex;flex-direction:column;min-width:0}
+.chatMessages{flex:1;padding:22px;overflow:auto;display:flex;flex-direction:column;gap:12px;min-height:420px}
+.chatBubble{max-width:min(820px,88%);padding:13px 15px;border-radius:16px;line-height:1.62;font-size:13px;white-space:pre-wrap}
+.chatBubble.user{align-self:flex-end;background:linear-gradient(135deg,#2b63ff,#7448e8);color:#fff;border-bottom-right-radius:6px}
+.chatBubble.assistant{align-self:flex-start;background:#121d31;border:1px solid #263b5d;color:#e7eef9;border-bottom-left-radius:6px}
+.chatMeta{font-size:9px;color:#71809a;margin-top:5px}
+.chatComposer{display:grid;grid-template-columns:1fr 42px auto;gap:8px;padding:12px;border-top:1px solid var(--line);background:rgba(6,10,18,.88)}
+.chatComposer textarea{resize:none;background:#0c1423;border:1px solid #253a5c;color:#fff;border-radius:12px;padding:12px 13px;min-height:42px;max-height:140px;outline:none}
+.chatComposer textarea:focus,.researchBar input:focus{border-color:#4f83ff;box-shadow:0 0 0 3px rgba(79,131,255,.13)}
+.chatEmpty{text-align:center;margin:auto;max-width:430px;color:#73819a}
+.chatEmpty h3{color:#eef4ff;margin:12px 0 7px;font:800 24px Manrope}
+.chatOrb{width:56px;height:56px;border-radius:18px;display:grid;place-items:center;margin:auto;background:radial-gradient(circle at 30% 20%,#5fcfff,#6c49db);box-shadow:0 18px 50px rgba(50,120,255,.25);font-size:24px}
+.researchBar{display:grid;grid-template-columns:1fr auto;gap:8px;margin-bottom:14px}
+.researchBar input{width:100%;background:#0c1423;border:1px solid #253a5c;color:#fff;border-radius:12px;padding:13px;outline:none}
+.researchStatus{min-height:24px;color:#8fa0ba;font-size:11px;margin:8px 2px}
+.researchResults{display:grid;gap:11px}
+.researchCard{border:1px solid var(--line);background:#0e1728;border-radius:15px;padding:15px}
+.researchCard h3{margin:0 0 7px;font-size:15px}
+.researchCard p{margin:0;color:#a8b6ca;line-height:1.65;font-size:12px}
+.researchSource{margin-top:10px;font-size:10px;color:#66b7ff;word-break:break-all}
+.appLaunchPanel{padding:16px;margin-bottom:14px}
+.appLaunchGrid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:9px}
+.appLaunch{border:1px solid #223553;background:#0d1728;color:#e6effc;text-align:left;padding:12px;border-radius:13px;min-height:77px}
+.appLaunch:hover{border-color:#3b6eb4;background:#111f35}
+.appLaunch b{display:block;font-size:12px}
+.appLaunch span{display:block;color:#72819a;font-size:10px;margin-top:5px;line-height:1.4}
+.voiceBtn.listening{border-color:#58b7ff!important;box-shadow:0 0 0 5px rgba(88,183,255,.12),0 0 28px rgba(88,183,255,.25)}
+@media(max-width:1000px){.chatShell{grid-template-columns:1fr}.chatHistory{border-right:0;border-bottom:1px solid var(--line);max-height:210px}.appLaunchGrid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:600px){.chatMessages{padding:14px}.chatBubble{max-width:94%}.researchBar{grid-template-columns:1fr}.appLaunchGrid{grid-template-columns:1fr}.nav{grid-template-columns:repeat(4,minmax(0,1fr));overflow-x:auto}}
 </style>
 </head>
 <body>
@@ -93,7 +133,7 @@ body:before{content:"";position:fixed;inset:0;pointer-events:none;background:rad
 <div class="app">
 <aside class="sidebar"><div class="brand"><div class="mark"><img src="assets/multiwork-mark.svg" alt="MULTIWORK AI"></div><b>MULTIWORK AI</b></div><nav class="nav">
 <button class="active" data-view="today"><span class="ico"><svg class="navIcon" viewBox="0 0 24 24" aria-hidden="true"><path d="m4 10 8-6 8 6v9a1 1 0 0 1-1 1h-5v-6H10v6H5a1 1 0 0 1-1-1z"/></svg></span><span>Home</span></button>
-<button data-view="ask"><span class="ico"><svg class="navIcon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v4M12 17v4M3 12h4M17 12h4M5.6 5.6l2.8 2.8M15.6 15.6l2.8 2.8M18.4 5.6l-2.8 2.8M8.4 15.6l-2.8 2.8"/><circle cx="12" cy="12" r="3.5"/></svg></span><span>AI Assistant</span></button>
+<button type="button" data-view="ask"><span class="ico"><svg class="navIcon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v4M12 17v4M3 12h4M17 12h4M5.6 5.6l2.8 2.8M15.6 15.6l2.8-2.8M18.4 5.6l-2.8 2.8M8.4 15.6l-2.8 2.8"/><circle cx="12" cy="12" r="3.5"/></svg></span><span>AI Assistant</span></button><button type="button" data-view="chat"><span class="ico">◉</span><span>Chat</span></button><button type="button" data-view="research"><span class="ico">⌁</span><span>Research</span></button>
 <button data-view="people"><span class="ico"><svg class="navIcon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3"/><path d="M3.5 19c.6-3.1 2.4-5 5.5-5s4.9 1.9 5.5 5"/><circle cx="17" cy="9" r="2.3"/><path d="M15.2 14.3c2.8-.1 4.5 1.5 5.1 4"/></svg></span><span>People</span></button>
 <button data-view="work"><span class="ico"><svg class="navIcon" viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="5" width="16" height="14" rx="2"/><path d="M8 5V3h8v2M8 11h8M8 15h5"/></svg></span><span>Work</span></button>
 <button data-view="tasks"><span class="ico"><svg class="navIcon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="m8 12 2.6 2.7L16.5 9"/></svg></span><span>Tasks</span></button><button data-view="integrations"><span class="ico"><svg class="navIcon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v18M3 12h18"/><circle cx="12" cy="12" r="7.5"/></svg></span><span>Connect</span></button>
@@ -118,12 +158,12 @@ body:before{content:"";position:fixed;inset:0;pointer-events:none;background:rad
 
 <div class="view" id="view-ask"><div class="sectionTitle"><div><h2>Ask MULTI</h2><p>Ask about your live workspace in plain language.</p></div></div><div class="panel" style="padding:18px"><div class="command" style="margin:0"><span class="spark">✦</span><input id="command2" placeholder="e.g. What should I focus on first?"><button class="ask" id="ask2">Run</button></div><div id="aiResult" class="aiResult hidden"></div></div></div>
 
-<div class="view" id="view-people"><div class="sectionTitle"><div><h2>People</h2><p>Important relationships and follow-ups.</p></div><button class="primaryBtn" id="addPerson">+ Add person</button></div><div class="list" id="peopleList"></div></div>
+<div class="view" id="view-chat"><div class="sectionTitle"><div><h2>Chat</h2><p>Talk with MULTIWORK and keep your executive conversation history.</p></div><button class="secondaryBtn" id="newConversation" type="button">+ New chat</button></div><div class="chatShell"><aside class="chatHistory" id="chatHistory"><div class="chatHistoryHead"><span>Conversations</span><span id="chatCount">0</span></div><div id="conversationList"></div></aside><div class="chatPane"><div id="chatMessages" class="chatMessages"><div class="chatEmpty"><div class="chatOrb">✦</div><h3>Talk to MULTIWORK</h3><p>Ask a question, plan your day, prepare a reply, research something, or tell me what needs doing.</p></div></div><div class="chatComposer"><textarea id="chatInput" rows="1" placeholder="Message MULTIWORK…"></textarea><button class="circle" id="chatVoice" type="button" title="Voice conversation">🎙</button><button class="ask" id="chatSend" type="button">Send</button></div></div></div></div><div class="view" id="view-research"><div class="sectionTitle"><div><h2>Research</h2><p>Investigate topics and return a concise executive brief with sources.</p></div><button class="secondaryBtn" id="researchVoice" type="button">🎙 Voice research</button></div><div class="researchBar"><input id="researchInput" placeholder="Research a company, market, competitor, person or topic…"><button class="ask" id="researchRun" type="button">Research</button></div><div id="researchStatus" class="researchStatus"></div><div id="researchResults" class="researchResults"></div></div><div class="view" id="view-people"><div class="sectionTitle"><div><h2>People</h2><p>Important relationships and follow-ups.</p></div><button class="primaryBtn" id="addPerson">+ Add person</button></div><div class="list" id="peopleList"></div></div>
 
 <div class="view" id="view-work"><div class="sectionTitle"><div><h2>Work</h2><p>Your active decisions and workstreams.</p></div><button class="primaryBtn" id="newWork">+ New work item</button></div><div class="list" id="workList"></div></div>
 
 <div class="view" id="view-tasks"><div class="sectionTitle"><div><h2>Tasks</h2><p>Everything open, sorted around your attention.</p></div><button class="primaryBtn" id="newTask">+ New task</button></div><div class="list" id="taskList"></div></div>
-<div class="view" id="view-integrations">
+<div class="view" id="view-integrations"><div class="panel appLaunchPanel"><div class="eyebrow" style="margin-bottom:7px">Executive shortcuts</div><div class="appLaunchGrid"><button class="appLaunch" data-app="spotify" type="button"><b>♫ Spotify</b><span>Play or search music</span></button><button class="appLaunch" data-app="whatsapp" type="button"><b>◔ WhatsApp</b><span>Open chats or prepare a reply</span></button><button class="appLaunch" data-app="instagram" type="button"><b>◎ Instagram</b><span>Open social workspace</span></button><button class="appLaunch" data-app="camera" type="button"><b>◉ Camera</b><span>Use your device camera</span></button><button class="appLaunch" data-app="gmail" type="button"><b>✉ Gmail</b><span>Open your inbox</span></button></div></div>
   <div class="sectionTitle"><div><h2>Connect MULTIWORK</h2><p>Give your executive OS the context it needs. Every connection is permissioned and can be disconnected.</p></div><button class="secondaryBtn" id="syncAll">↻ Sync now</button></div>
   <div class="panel" style="padding:16px;margin-bottom:14px">
     <div class="eyebrow" style="margin-bottom:7px">Your context</div>
@@ -167,7 +207,7 @@ const $=s=>document.querySelector(s);
 const qsa=s=>document.querySelectorAll(s);
 
 // No startup overlay: the executive shell renders immediately; data hydrates in the background.
-const state={user:null,profile:null,tasks:[],events:[],contacts:[],external:[],notes:[],integrations:[],googleToken:null,googleRefreshToken:null,googleConnected:false,voiceListening:false,wakeListening:false,wakeEnabled:localStorage.getItem("multiwork_wake_word")==="1",voiceSession:false,voiceStopping:false,voiceIgnoreUntil:0,dialogue:null,pendingDraft:null,conversationHistory:[],view:"today"};
+const state={user:null,profile:null,tasks:[],events:[],contacts:[],external:[],notes:[],integrations:[],googleToken:null,googleRefreshToken:null,googleConnected:false,voiceListening:false,wakeListening:false,wakeEnabled:localStorage.getItem("multiwork_wake_word")==="1",voiceSession:false,voiceStopping:false,voiceIgnoreUntil:0,dialogue:null,pendingDraft:null,conversationHistory:[],conversations:[],chatMessages:[],activeConversationId:null,researchResults:[],voiceBusy:false,view:"today"};
 
 function toast(title,msg){const t=$("#toast");t.innerHTML="<b>"+escapeHtml(title)+"</b>"+escapeHtml(msg);t.classList.add("show");clearTimeout(window.__toast);window.__toast=setTimeout(()=>t.classList.remove("show"),3800)}
 function escapeHtml(v){return String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[c]))}
@@ -1201,6 +1241,321 @@ $("#testAI")?.addEventListener("click",testAI);$("#ask2").onclick=()=>commandAns
 qsa(".nav button").forEach(b=>b.onclick=()=>setView(b.dataset.view));$("#newTask")?.addEventListener("click",addTask);$("#addPerson")?.addEventListener("click",addPerson);$("#newWork")?.addEventListener("click",addWork);$("#modalCancel")?.addEventListener("click",()=>$("#modal").classList.remove("open"));$("#modal")?.addEventListener("click",e=>{if(e.target.id==="modal")$("#modal").classList.remove("open")});
 $("#modalPrimary").onclick=()=>$("#modal").classList.remove("open");
 
+
+
+const MULTIWORK_API_URL="https://cjsiwwbqbmviucpezglt.supabase.co/functions/v1/multiwork-api";
+const MULTIWORK_RESEARCH_URL="https://cjsiwwbqbmviucpezglt.supabase.co/functions/v1/multiwork-research";
+
+function setView(name){
+  const valid=["today","ask","chat","research","people","work","tasks","integrations"];
+  const target=valid.includes(name)?name:"today";
+  state.view=target;
+  qsa(".view").forEach(v=>v.classList.remove("active"));
+  const panel=$("#view-"+target);if(panel)panel.classList.add("active");
+  qsa(".nav button").forEach(b=>b.classList.toggle("active",b.dataset.view===target));
+  $("#crumb").textContent=target==="today"?"Today":target==="ask"?"AI Assistant":target.charAt(0).toUpperCase()+target.slice(1);
+  if(target==="ask")setTimeout(()=>$("#command2")?.focus(),60);
+  if(target==="chat"){loadChatHistory().catch(()=>{});setTimeout(()=>$("#chatInput")?.focus(),60)}
+  if(target==="research")setTimeout(()=>$("#researchInput")?.focus(),60);
+}
+
+function voiceLanguage(){
+  const l=(navigator.language||"en-US").toLowerCase();
+  return l.startsWith("en-")?(l==="en-us"?"en-US":"en-NG"):"en-US";
+}
+function pickSpeechVoice(){
+  const voices=("speechSynthesis" in window?window.speechSynthesis.getVoices():[])||[];
+  return voices.find(v=>/en[-_](ng|gb|us)/i.test(v.lang)&&/(google|microsoft|natural|samantha|daniel)/i.test(v.name))||voices.find(v=>/en[-_](ng|gb|us)/i.test(v.lang))||voices[0]||null;
+}
+function speakAssistant(text,onend){
+  const spoken=String(text||"").replace(/https?:\/\/\S+/g,"").trim().slice(0,1800);
+  if(!spoken||!("speechSynthesis" in window)){onend?.();return}
+  if(window.__voiceRecognition)try{window.__voiceRecognition.abort()}catch{}
+  state.voiceBusy=true;
+  try{
+    window.speechSynthesis.cancel();
+    const u=new SpeechSynthesisUtterance(spoken),v=pickSpeechVoice();
+    if(v)u.voice=v;
+    u.lang=voiceLanguage();u.rate=.96;u.pitch=1;u.volume=1;
+    u.onend=()=>{state.voiceBusy=false;onend?.();if(state.voiceSession&&!state.voiceStopping)setTimeout(beginVoiceTurn,350)};
+    u.onerror=()=>{state.voiceBusy=false;onend?.();if(state.voiceSession&&!state.voiceStopping)setTimeout(beginVoiceTurn,350)};
+    window.speechSynthesis.speak(u);
+  }catch{state.voiceBusy=false;onend?.()}
+}
+function speakColleague(text,tone,onend){speakAssistant(text,onend)}
+function getSpeechRecognition(){return window.SpeechRecognition||window.webkitSpeechRecognition||null}
+function setVoiceButton(active){const b=$("#voiceCommand");if(!b)return;b.classList.toggle("listening",!!active);b.setAttribute("aria-label",active?"MULTIWORK is listening":"Start voice assistant");b.title=active?"MULTIWORK is listening":"Start voice assistant"}
+function setVoiceHint(text){const h=$("#voiceHint");if(h)h.innerHTML=text}
+function stopVoiceCommand(disableSession=true){
+  if(disableSession)state.voiceSession=false;
+  state.voiceStopping=true;
+  const r=window.__voiceRecognition;window.__voiceRecognition=null;
+  if(r)try{r.onend=null;r.abort()}catch{}
+  state.voiceListening=false;state.voiceBusy=false;setVoiceButton(false);
+  if("speechSynthesis" in window)window.speechSynthesis.cancel();
+  setVoiceHint('Voice ready · say <b>“Hi MULTIWORK”</b> or tap the microphone.');
+  setTimeout(()=>state.voiceStopping=false,120);
+}
+function buildRecognition(){
+  const SR=getSpeechRecognition();if(!SR)return null;
+  const r=new SR();
+  r.lang=voiceLanguage();r.continuous=false;r.interimResults=true;r.maxAlternatives=3;
+  if("processLocally" in r)try{r.processLocally=true}catch{}
+  if("phrases" in r&&typeof window.SpeechRecognitionPhrase==="function")try{r.phrases=["MULTIWORK","Gmail","WhatsApp","Spotify","Instagram","calendar","executive assistant","research","delegate","schedule"].map(p=>new window.SpeechRecognitionPhrase(p,4))}catch{}
+  return r;
+}
+function beginVoiceTurn(){
+  if(!state.voiceSession||state.voiceStopping||state.voiceBusy||state.voiceListening)return;
+  const recognition=buildRecognition();if(!recognition){toast("Voice unavailable","Use a browser with speech recognition support, or MULTIWORK Mobile.");state.voiceSession=false;return}
+  window.__voiceRecognition=recognition;state.voiceListening=true;setVoiceButton(true);
+  setVoiceHint("MULTIWORK is listening · speak naturally, then pause. I’ll answer and keep listening.");
+  let finalText="";let handled=false;
+  recognition.onstart=()=>{state.voiceListening=true;setVoiceButton(true)};
+  recognition.onresult=e=>{
+    let interim="";
+    for(let i=e.resultIndex;i<e.results.length;i++){const t=e.results[i]?.[0]?.transcript||"";if(e.results[i].isFinal)finalText+=(t+" ");else interim+=(t+" ")}
+    if(interim.trim())setVoiceHint("Listening… <b>"+escapeHtml(interim.trim().slice(-120))+"</b>");
+  };
+  recognition.onnomatch=()=>setVoiceHint("I didn’t catch that. Go ahead again.");
+  recognition.onerror=e=>{
+    if(window.__voiceRecognition===recognition)window.__voiceRecognition=null;state.voiceListening=false;setVoiceButton(false);
+    if(e.error==="not-allowed"||e.error==="service-not-allowed"){state.voiceSession=false;toast("Microphone permission needed","Allow microphone access for MULTIWORK voice control.");setVoiceHint("Voice paused · enable microphone permission and try again.");return}
+    if(state.voiceSession&&!state.voiceStopping)setTimeout(beginVoiceTurn,500);
+  };
+  recognition.onend=()=>{
+    if(window.__voiceRecognition===recognition)window.__voiceRecognition=null;
+    state.voiceListening=false;setVoiceButton(false);
+    const spoken=finalText.trim();
+    if(spoken&&!handled){handled=true;voiceHandleUtterance(spoken)}else if(state.voiceSession&&!state.voiceStopping)setTimeout(beginVoiceTurn,450);
+  };
+  try{recognition.start()}catch{state.voiceListening=false;window.__voiceRecognition=null;setTimeout(()=>state.voiceSession&&beginVoiceTurn(),500)}
+}
+function startVoiceCommand(fromWake=false,announce=true,session=true){
+  try{stopWakeWord?.(true)}catch{}
+  state.voiceSession=session;state.voiceStopping=false;
+  if(!getSpeechRecognition()){toast("Voice unavailable","This browser does not expose speech recognition.");return}
+  if(announce)speakAssistant("Yes. I’m listening.",()=>{if(state.voiceSession)beginVoiceTurn()});else beginVoiceTurn();
+}
+async function voiceHandleUtterance(spoken){
+  const clean=stripWakePrefix(spoken).trim();if(!clean)return;
+  const tone=detectVoiceTone(clean);
+  state.conversationHistory.push({speaker:"user",text:clean,tone,at:new Date().toISOString()});state.conversationHistory=state.conversationHistory.slice(-24);
+  if(/^(stop|stop listening|stop voice|cancel assistant|go quiet|be quiet)$/i.test(clean)){stopVoiceCommand(true);return}
+  setVoiceHint("MULTIWORK is working on that…");
+  try{await commandAnswer(clean,"voice",{voice:true,voiceTone:tone})}catch(e){try{await askAI(clean,"voice",{voice:true,voiceTone:tone})}catch(err){speakColleague("I couldn’t complete that request. Please try again.")}}
+}
+
+async function ensureConversation(title){
+  if(state.activeConversationId)return state.activeConversationId;
+  if(!state.user||state.user.id==="demo")return null;
+  const r=await supabase.from("conversations").insert({user_id:state.user.id,title:(title||"Executive chat").slice(0,120)}).select("*").single();
+  if(r.error)throw r.error;
+  state.activeConversationId=r.data.id;state.conversations=[r.data].concat(state.conversations);renderConversationList();return r.data.id;
+}
+async function saveChatMessage(role,content,metadata={}){
+  if(!state.user||state.user.id==="demo")return;
+  const id=await ensureConversation(content.slice(0,70));if(!id)return;
+  const r=await supabase.from("messages").insert({conversation_id:id,user_id:state.user.id,role,content,metadata});
+  if(r.error)console.warn("Chat history save failed",r.error);
+}
+function renderConversationList(){
+  const host=$("#conversationList");if(!host)return;
+  const count=$("#chatCount");if(count)count.textContent=String(state.conversations.length||0);
+  host.innerHTML=state.conversations.length?state.conversations.map(c=>'<button type="button" class="conversationItem '+(c.id===state.activeConversationId?"active":"")+'" data-conversation="'+escapeHtml(c.id)+'"><b>'+escapeHtml(c.title||"Executive chat")+'</b><small>'+escapeHtml(new Date(c.updated_at||c.created_at).toLocaleString())+'</small></button>').join(""):'<div style="padding:15px;color:#6e7d95;font-size:11px">Your conversations will appear here.</div>';
+  host.querySelectorAll(".conversationItem").forEach(b=>b.onclick=()=>openConversation(b.dataset.conversation));
+}
+function renderChatMessages(){
+  const host=$("#chatMessages");if(!host)return;
+  if(!state.chatMessages.length){host.innerHTML='<div class="chatEmpty"><div class="chatOrb">✦</div><h3>Talk to MULTIWORK</h3><p>Ask a question, plan your day, prepare a reply, research something, or tell me what needs doing.</p></div>';return}
+  host.innerHTML=state.chatMessages.map(m=>'<div><div class="chatBubble '+(m.role==="user"?"user":"assistant")+'">'+escapeHtml(m.content)+'</div><div class="chatMeta">'+(m.role==="user"?"You":"MULTIWORK AI")+' · '+new Date(m.created_at||Date.now()).toLocaleTimeString([], {hour:"2-digit",minute:"2-digit"})+'</div></div>').join("");
+  host.scrollTop=host.scrollHeight;
+}
+async function openConversation(id){
+  state.activeConversationId=id;
+  const r=await supabase.from("messages").select("*").eq("conversation_id",id).eq("user_id",state.user.id).order("created_at",{ascending:true}).limit(200);
+  state.chatMessages=r.data||[];renderConversationList();renderChatMessages();
+}
+async function loadChatHistory(){
+  if(!state.user||state.user.id==="demo"){renderConversationList();renderChatMessages();return}
+  const r=await supabase.from("conversations").select("*").eq("user_id",state.user.id).order("updated_at",{ascending:false}).limit(30);
+  state.conversations=r.data||[];
+  if(!state.activeConversationId&&state.conversations[0])state.activeConversationId=state.conversations[0].id;
+  renderConversationList();
+  if(state.activeConversationId)await openConversation(state.activeConversationId);else renderChatMessages();
+}
+async function sendChat(text,options={}){
+  const q=String(text||"").trim();if(!q)return;
+  $("#chatInput").value="";setView("chat");
+  state.chatMessages.push({role:"user",content:q,created_at:new Date().toISOString()});renderChatMessages();
+  saveChatMessage("user",q,{source:options.voice?"voice":"chat"}).catch(()=>{});
+  await commandAnswer(q,"chat",{...options});
+}
+function socialAwayReply(){return "Thanks for reaching out. I’m currently away from this conversation and may not be able to respond immediately. I’ve seen your message and I’ll get back to you as soon as possible."}
+async function draftProfessionalReply(){
+  const reply=socialAwayReply();
+  showModal("Professional reply draft","MULTIWORK prepared this for your approval.",'<textarea id="replyDraft" class="modalInput" style="min-height:120px">'+escapeHtml(reply)+'</textarea><div style="font-size:10px;color:#7f8ea8;margin-top:7px">MULTIWORK will not silently send external messages.</div>','Copy reply');
+  $("#modalPrimary").onclick=async()=>{try{await navigator.clipboard?.writeText($("#replyDraft").value);toast("Reply copied","Paste it into the conversation you want to answer.");}catch{toast("Copy blocked","Select and copy the draft manually.")}};
+  return reply;
+}
+async function openAppAction(app,q=""){
+  if(app==="spotify"){const target=q?"spotify:search:"+encodeURIComponent(q):"https://open.spotify.com/";try{window.location.href=target}catch{window.open("https://open.spotify.com/","_blank")}return "Opening Spotify"+(q?" and searching for "+q:"")+"."}
+  if(app==="whatsapp"){window.open("https://web.whatsapp.com/","_blank","noopener,noreferrer");return "Opening WhatsApp."}
+  if(app==="instagram"){window.open("https://www.instagram.com/","_blank","noopener,noreferrer");return "Opening Instagram."}
+  if(app==="gmail"){window.open("https://mail.google.com/mail/u/0/#inbox","_blank","noopener,noreferrer");return "Opening Gmail."}
+  if(app==="camera"){openCamera();return "Opening the camera."}
+  return "";
+}
+async function openCamera(){
+  try{
+    const stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:"environment"},audio:false});
+    showModal("MULTIWORK Camera","Your browser controls camera access.",'<video id="multiworkCamera" autoplay playsinline style="width:100%;border-radius:14px;background:#000;max-height:55vh;object-fit:cover"></video><div style="font-size:10px;color:#7f8ea8;margin-top:8px">Capture stays on this device until you choose to share it.</div>',"Close");
+    const v=$("#multiworkCamera");v.srcObject=stream;
+    const stop=()=>stream.getTracks().forEach(t=>t.stop());
+    $("#modalCancel").onclick=()=>{$("#modal").classList.remove("open");stop()};
+    $("#modalPrimary").onclick=()=>{$("#modal").classList.remove("open");stop()};
+  }catch(e){toast("Camera unavailable","Allow camera access to use MULTIWORK Camera.")}
+}
+
+async function askAI(raw,target,options={}){
+  const q=String(raw||"").trim();if(!q)return;
+  const session=(await supabase.auth.getSession()).data.session;
+  if(!session){toast("Sign in required","Your MULTIWORK session is missing.");return}
+  const box=$("#aiResult");if(box&&target==="ask"){box.classList.remove("hidden");box.innerHTML="<b>MULTIWORK AI</b><p>Thinking with your workspace context…</p>"}
+  const context={profile:state.profile,tasks:state.tasks.slice(0,60),events:state.events.slice(0,60),contacts:state.contacts.slice(0,80),external:state.external.slice(0,120),notes:state.notes.slice(0,40),conversation:{history:state.conversationHistory.slice(-18),pending:state.dialogue||null}};
+  const res=await fetch(MULTIWORK_API_URL,{method:"POST",headers:{"Content-Type":"application/json",Authorization:"Bearer "+session.access_token},body:JSON.stringify({message:q,context,mode:"assistant"})});
+  const data=await res.json().catch(()=>({}));if(!res.ok)throw new Error(data.error||"MULTIWORK AI could not respond");
+  const output=String(data.output||"No response generated.").trim();
+  state.conversationHistory.push({speaker:"assistant",text:output,at:new Date().toISOString()});state.conversationHistory=state.conversationHistory.slice(-24);
+  state.chatMessages.push({role:"assistant",content:output,created_at:new Date().toISOString()});
+  saveChatMessage("assistant",output,{source:options.voice?"voice":"assistant"}).catch(()=>{});
+  if(target==="chat"){setView("chat");renderChatMessages()}
+  if(target==="ask"&&box)box.innerHTML="<b>MULTIWORK AI</b><p>"+escapeHtml(output)+"</p>";
+  if(options.voice||target==="voice")speakColleague(output,options.voiceTone||"neutral");
+  return output;
+}
+async function runResearch(query,voice=false){
+  const q=String(query||"").trim();if(!q)return;
+  setView("research");const status=$("#researchStatus"),results=$("#researchResults");status.textContent="Researching live sources…";results.innerHTML="";
+  try{
+    const session=(await supabase.auth.getSession()).data.session;if(!session)throw new Error("Sign in to research.");
+    const res=await fetch(MULTIWORK_RESEARCH_URL,{method:"POST",headers:{"Content-Type":"application/json",Authorization:"Bearer "+session.access_token},body:JSON.stringify({query:q,context:{profile:state.profile}})});
+    const data=await res.json().catch(()=>({}));if(!res.ok)throw new Error(data.error||"Research failed");
+    status.textContent="Research complete · "+(data.sources?.length||0)+" sources reviewed";
+    const cards=[];if(data.summary)cards.push('<div class="researchCard"><h3>Executive brief</h3><p>'+escapeHtml(data.summary)+'</p></div>');
+    (data.sources||[]).forEach(src=>cards.push('<div class="researchCard"><h3>'+escapeHtml(src.title||"Source")+'</h3><p>'+escapeHtml(src.snippet||"")+'</p><div class="researchSource">'+escapeHtml(src.url||"")+'</div></div>'));
+    results.innerHTML=cards.join("")||'<div class="researchCard"><p>No sources were returned. Try a more specific request.</p></div>';
+    if(voice)speakColleague(data.summary||"Research is complete. I’ve placed the findings and sources on the Research page.");
+    return data.summary||"";
+  }catch(e){status.textContent="Research unavailable";results.innerHTML='<div class="researchCard"><h3>Research could not complete</h3><p>'+escapeHtml(e.message||"Try again.")+'</p></div>';if(voice)speakColleague("I couldn’t complete the live research right now.")}
+}
+function extractResearchQuery(q){return String(q||"").replace(/^(research|look up|find out|investigate|study|compare|what is the latest on|what's the latest on)\s+/i,"").trim()}
+async function commandAnswer(raw,target,options={}){
+  const q=String(raw||"").trim();if(!q)return;
+  const l=q.toLowerCase(),voice=!!options.voice;
+  if(/\b(research|look up|find out|investigate|study|compare|latest news|what is happening with|what's the latest on)\b/i.test(q))return runResearch(extractResearchQuery(q),voice);
+  if(/\b(open|show|go to|take me to)\b.*\b(chat|conversation|messages?)\b/i.test(l)){setView("chat");if(voice)speakColleague("Opening your chat history.");return}
+  if(/\b(play|put on|listen to|find)\b.*\b(music|song|playlist|spotify)\b/i.test(l)){const term=q.replace(/.*?\b(?:play|put on|listen to|find)\b/i,"").replace(/\b(on\s+)?spotify\b/i,"").trim();const reply=await openAppAction("spotify",term);if(voice)speakColleague(reply);return reply}
+  if(/\b(open|launch|show)\b.*\b(whatsapp|instagram|gmail|camera)\b/i.test(l)){const app=/whatsapp/.test(l)?"whatsapp":/instagram/.test(l)?"instagram":/gmail/.test(l)?"gmail":"camera";const reply=await openAppAction(app);if(voice)speakColleague(reply);return reply}
+  if(/\b(reply|respond|answer)\b.*\b(message|chat|dm|customer|client)\b/i.test(l)||/not around|get back as soon as possible|when i'm away/i.test(l)){const reply=await draftProfessionalReply();if(voice)speakColleague("I drafted a professional reply for your approval.");return reply}
+  if(/\b(call|phone|ring)\b/i.test(l)){
+    const parsed=extractPersonVerb(q),person=(parsed?.person||"").trim();if(!person){state.dialogue={type:"call",name:""};if(voice)speakColleague("Who should I call?");return}
+    const c=findContact(person);if(c?.phone){openDialer(c.phone,c.full_name);return}
+    if(c&&!c.phone){if(voice)speakColleague("I found "+c.full_name+", but there is no phone number saved.");return}
+    state.dialogue={type:"call",name:person};if(voice)speakColleague("I couldn’t find "+person+" in your saved contacts. Which one do you mean?");return;
+  }
+  if(/\b(text|sms|message|write to|send a text)\b/i.test(l)){
+    const parsed=extractPersonVerb(q),person=(parsed?.person||"").trim(),topic=(parsed?.topic||"").trim();
+    if(!person){state.dialogue={type:"message",contact:null};if(voice)speakColleague("Who should I message?");return}
+    const c=findContact(person);if(!c){if(voice)speakColleague("I couldn’t find "+person+" in your saved contacts.");return}
+    if(!topic){state.dialogue={type:"message",contact:c};if(voice)speakColleague("What should I say to "+c.full_name+"?");return}
+    await createMessageDraft(c,topic,detectVoiceTone(q));return;
+  }
+  if(/^(send it|open messages|send the message)$/i.test(q)&&state.dialogue){const done=await handleDialogue(q,detectVoiceTone(q));if(done)return}
+  if(/\b(open|show|go to|take me to)\b.*\b(tasks?|to[- ]?dos?)\b/i.test(l)){setView("tasks");if(voice)speakColleague("Opening your tasks.");return}
+  if(/\b(open|show|go to|take me to)\b.*\b(people|contacts?)\b/i.test(l)){setView("people");if(voice)speakColleague("Opening your people.");return}
+  if(/\b(open|show|go to|take me to)\b.*\b(connect|connections|integrations?)\b/i.test(l)){setView("integrations");if(voice)speakColleague("Opening your connections.");return}
+  if(/\b(open|show|go to|take me to)\b.*\b(work|workstreams?)\b/i.test(l)){setView("work");if(voice)speakColleague("Opening your work.");return}
+  if(/\b(open|show|go to|take me to)\b.*\b(home|today|dashboard)\b/i.test(l)){setView("today");if(voice)speakColleague("Opening your executive dashboard.");return}
+  if(/\b(create|add|make)\b.*\btask\b/i.test(l)){const title=q.replace(/.*?\b(?:create|add|make)\s+(?:a\s+)?task\s*(?:called|named|to)?\s*/i,"").trim();if(title&&state.user?.id!=="demo"){const r=await supabase.from("tasks").insert({user_id:state.user.id,title,status:"open",priority:"normal",owner_type:"you"});if(r.error)throw r.error;await loadWorkspace();const reply="Done. I created the task “"+title+".”";if(voice)speakColleague(reply);else toast("Task created",title);return reply}}
+  if(/\b(delegate|assign)\b/.test(l)){const needle=q.replace(/.*?\b(?:delegate|assign)\b/i,"").trim().toLowerCase(),task=state.tasks.find(t=>needle&&String(t.title||"").toLowerCase().includes(needle));if(task){await delegateTask(task.id);if(voice)speakColleague("I’ve delegated that task.");return}}
+  if(/\b(complete|finish|close|mark done)\b/.test(l)){const needle=q.replace(/.*?\b(?:complete|finish|close|mark done)\b/i,"").trim().toLowerCase(),task=state.tasks.find(t=>needle&&String(t.title||"").toLowerCase().includes(needle));if(task){await completeTask(task.id);if(voice)speakColleague("Done. I marked that task complete.");return}}
+  if(/\bremind me to\b|\bremember to\b/i.test(l)){const title=q.replace(/^remind me(?: to)?|^remember to/i,"").trim();showModal("Create reminder","Save this to your executive queue.",'<div class="field"><label>REMINDER</label><input id="voiceReminderTitle" class="modalInput" value="'+escapeHtml(title)+'"></div><div class="field"><label>DUE DATE</label><input id="voiceDue" class="modalInput" type="datetime-local"></div>','Save reminder');$("#modalPrimary").onclick=async()=>{const t=$("#voiceReminderTitle").value.trim(),due=$("#voiceDue").value?new Date($("#voiceDue").value).toISOString():null;const r=await supabase.from("tasks").insert({user_id:state.user.id,title:t,status:"open",priority:"normal",owner_type:"you",due_at:due});if(r.error){toast("Could not save reminder",r.error.message);return}$("#modal").classList.remove("open");await loadWorkspace();toast("Reminder saved",t);if(voice)speakColleague("Reminder saved.")};return}
+  if(/attention|focus/.test(l)){const p=state.tasks.filter(t=>!["completed","done"].includes((t.status||"").toLowerCase())).sort((a,b)=>priorityScore(b)-priorityScore(a)).slice(0,3),reply=p.length?p.map((x,i)=>(i+1)+". "+x.title).join(" "):"Your attention queue is clear.";if(voice)speakColleague(reply);else toast("Your focus",reply);if(target!=="voice"){$("#aiResult").classList.remove("hidden");$("#aiResult").innerHTML="<b>Your focus</b><p>"+escapeHtml(reply)+"</p>"}return reply}
+  if(/next meeting|upcoming meeting|what do i have next/.test(l)){const ev=state.events.filter(e=>new Date(e.starts_at)>new Date()).sort((a,b)=>new Date(a.starts_at)-new Date(b.starts_at))[0],reply=ev?ev.title+" at "+time(ev.starts_at)+".":"You have no upcoming meetings.";if(voice)speakColleague(reply);else toast("Next meeting",reply);return reply}
+  if(/today|schedule/.test(l)&&!/\b(research)\b/.test(l)){const ev=state.events.filter(e=>isToday(e.starts_at)).map(e=>time(e.starts_at)+" "+e.title).join(" • "),reply=ev||"Nothing is scheduled today.";if(voice)speakColleague(reply);else toast("Today",reply);return reply}
+  return askAI(q,target,options);
+}
+
+async function loadWorkspace(){
+  if(!state.user)return;
+  const uid=state.user.id;
+  const names=[
+    ["profile",supabase.from("profiles").select("*").eq("id",uid).maybeSingle()],
+    ["tasks",supabase.from("tasks").select("*").eq("user_id",uid).order("due_at",{ascending:true,nullsFirst:false})],
+    ["events",supabase.from("events").select("*").eq("user_id",uid).order("starts_at",{ascending:true})],
+    ["contacts",supabase.from("contacts").select("*").eq("user_id",uid).order("updated_at",{ascending:false})],
+    ["external",supabase.from("external_items").select("*").eq("user_id",uid).order("occurred_at",{ascending:false}).limit(120)],
+    ["notes",supabase.from("notes").select("*").eq("user_id",uid).order("updated_at",{ascending:false}).limit(30)],
+    ["integrations",supabase.from("integrations").select("*").eq("user_id",uid).order("updated_at",{ascending:false})]
+  ];
+  const results=await Promise.all(names.map(async x=>{try{return [x[0],await withTimeout(x[1],6500)]}catch(e){return [x[0],{data:x[0]==="profile"?null:[],error:e}]}}));
+  const data=Object.fromEntries(results);
+  state.profile=data.profile?.data||state.profile;state.tasks=data.tasks?.data||[];state.events=data.events?.data||[];state.contacts=data.contacts?.data||[];state.external=data.external?.data||[];state.notes=data.notes?.data||[];state.integrations=data.integrations?.data||[];
+  if(!state.profile&&uid!=="demo"){const name=state.user.name||state.user.email?.split("@")[0]||"Executive";const p=await supabase.from("profiles").insert({id:uid,full_name:name,role:"Executive",timezone:"Africa/Lagos",onboarding_completed:true}).select("*").maybeSingle();if(!p.error)state.profile=p.data}
+  updateIntegrationUI();renderAll();loadChatHistory().catch(()=>{});
+}
+function renderAll(){renderIdentity();renderToday();renderPeople();renderWork();renderTasks();$("#datePill").textContent=formatDate(new Date()).toUpperCase();$("#todayLabel").textContent=new Intl.DateTimeFormat(undefined,{day:"numeric",month:"long"}).format(new Date());renderConversationList();renderChatMessages()}
+
+async function handleAuthSubmit(e){
+  e.preventDefault();
+  const email=$("#authEmail").value.trim(),password=$("#authPassword").value,signup=!$("#nameField").classList.contains("hidden"),name=$("#authName").value.trim();
+  if(!email||!password){setMessage("error","Enter your email and password.");return}
+  if(password.length<8){setMessage("error","Use at least 8 characters.");return}
+  if(signup&&!name){setMessage("error","Enter your full name.");return}
+  const b=$("#authSubmit");b.disabled=true;b.textContent=signup?"Creating…":"Signing in…";setMessage("","");
+  try{
+    const result=signup?await withTimeout(supabase.auth.signUp({email,password,options:{data:{full_name:name}}}),15000):await withTimeout(supabase.auth.signInWithPassword({email,password}),15000);
+    if(result.error)throw result.error;
+    if(result.data?.session&&result.data?.user){
+      state.user={id:result.data.user.id,email:result.data.user.email||email,name:signup?name:(result.data.user.user_metadata?.full_name||email.split("@")[0])};
+      showApp();renderAll();b.disabled=false;b.textContent=signup?"Create account":"Sign in";loadWorkspace().catch(()=>{});toast(signup?"Welcome":"Welcome back","Your executive workspace is ready.");return;
+    }
+    if(signup&&result.data?.user&&!result.data.session){showAuth("signin");setMessage("success","Account created. Check your email if confirmation is required, then sign in.");return}
+    throw new Error("No session was returned. Please try again.");
+  }catch(err){b.disabled=false;b.textContent=signup?"Create account":"Sign in";const msg=String(err?.message||"Authentication failed. Please try again.");setMessage("error",/invalid login credentials/i.test(msg)?"Email or password is incorrect.":/network|fetch|timeout/i.test(msg)?"The connection is taking too long. Check your internet and try again.":msg)}
+}
+async function connectGoogle(){
+  if(!state.user||state.user.id==="demo"){toast("Sign in first","Google connections require your MULTIWORK account.");return}
+  showModal("Connect Google","MULTIWORK requests read-only Gmail, Calendar and Contacts context.","<div style='color:#b4c1d7;font-size:12px;line-height:1.7'><b style='color:#fff'>Requested access</b><div style='margin-top:9px;display:grid;gap:7px'><span>• Gmail — read-only</span><span>• Calendar — read-only</span><span>• Contacts — read-only</span></div><p style='margin-bottom:0'>Google shows the real consent screen. You can disconnect later.</p></div>","Continue to Google");
+  $("#modalPrimary").onclick=async()=>{
+    $("#modal").classList.remove("open");sessionStorage.setItem("multiwork_google_origin",state.user.id);
+    try{
+      const linked=await supabase.auth.linkIdentity({provider:"google",options:{scopes:GOOGLE_SCOPES,queryParams:{access_type:"offline",prompt:"consent",include_granted_scopes:"true"},redirectTo:window.location.origin+window.location.pathname}});
+      if(linked.error)throw linked.error;
+      if(linked.data?.url)window.location.href=linked.data.url;
+    }catch(err){
+      const msg=String(err?.message||"Google connection failed");
+      if(/manual linking|identity.*link|linking.*disabled|not enabled/i.test(msg)){
+        const fallback=await supabase.auth.signInWithOAuth({provider:"google",options:{scopes:GOOGLE_SCOPES,queryParams:{access_type:"offline",prompt:"consent",include_granted_scopes:"true"},redirectTo:window.location.origin+window.location.pathname}});
+        if(fallback.error)toast("Google connection unavailable",fallback.error.message||"Enable Google in Supabase Auth.");else if(fallback.data?.url)window.location.href=fallback.data.url;
+      }else if(/provider.*not enabled|unsupported provider/i.test(msg))toast("Google provider disabled","Enable Google under Supabase Authentication → Providers.");
+      else toast("Google connection failed",msg);
+    }
+  };
+}
+function appShortcutHandlers(){qsa(".appLaunch").forEach(b=>b.onclick=()=>openAppAction(b.dataset.app))}
+function setupEnhancedUI(){
+  qsa(".nav button").forEach(b=>{b.type="button";b.addEventListener("click",()=>setView(b.dataset.view))});
+  $("#chatSend")?.addEventListener("click",()=>sendChat($("#chatInput").value));
+  $("#chatVoice")?.addEventListener("click",()=>startVoiceCommand(false,true,true));
+  $("#newConversation")?.addEventListener("click",()=>{state.activeConversationId=null;state.chatMessages=[];setView("chat");renderChatMessages()});
+  $("#chatInput")?.addEventListener("keydown",e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();sendChat(e.currentTarget.value)}});
+  $("#researchRun")?.addEventListener("click",()=>runResearch($("#researchInput").value,false));
+  $("#researchInput")?.addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();runResearch(e.currentTarget.value,false)}});
+  $("#researchVoice")?.addEventListener("click",()=>startVoiceCommand(false,true,true));
+  appShortcutHandlers();
+}
+setupEnhancedUI();
 
 function loadDemo(){
   state.user={id:"demo",email:"demo@multiwork.ai",name:"Alex Morgan"};
