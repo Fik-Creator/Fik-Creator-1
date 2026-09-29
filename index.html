@@ -284,6 +284,9 @@ function speakAssistant(text){
   if(!("speechSynthesis" in window)||!text)return;
   try{window.speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(String(text).slice(0,1200));u.lang="en-NG";u.rate=.96;u.pitch=1;window.speechSynthesis.speak(u)}catch{}
 }
+function isIOSLike(){
+  return /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform==="MacIntel"&&navigator.maxTouchPoints>1);
+}
 function getSpeechRecognition(){return window.SpeechRecognition||window.webkitSpeechRecognition||null}
 function setVoiceButton(active){
   const b=$("#voiceCommand"); if(!b)return;
@@ -310,7 +313,7 @@ function openVoiceAssistant(){
 }
 function startWakeWord(){
   const SpeechRecognition=getSpeechRecognition();
-  if(!SpeechRecognition){toast("Wake word unavailable","This browser does not support background-style speech recognition. The Android companion provides deeper device-level control.");return}
+  if(!SpeechRecognition){toast("Wake word unavailable","This browser does not support the wake-word listener. On iPhone/iPad, use Safari and keep MULTIWORK open with speech recognition permitted.");return}
   if(state.wakeListening||state.voiceListening)return;
   state.wakeEnabled=true;
   localStorage.setItem("multiwork_wake_word","1");
@@ -331,8 +334,8 @@ function startWakeWord(){
       commandAnswer(command,"command",{voice:true});
       speakAssistant("Got it.");
     }else{
-      speakAssistant("Yes?");
-      setTimeout(()=>startVoiceCommand(true),500);
+      // Avoid speech-synthesis immediately before microphone activation; WebKit/iOS can stop recognition when TTS and SpeechRecognition overlap.
+      setTimeout(()=>startVoiceCommand(true),350);
     }
   };
   r.onerror=e=>{
@@ -361,7 +364,7 @@ function toggleWakeWord(){
 }
 function startVoiceCommand(fromWake=false){
   const SpeechRecognition=getSpeechRecognition();
-  if(!SpeechRecognition){toast("Voice unavailable","Speech recognition is not available in this browser. Use the Android companion for deeper device-level voice controls.");return}
+  if(!SpeechRecognition){toast("Voice unavailable",isIOSLike()?"On iPhone/iPad, use Safari and make sure Siri & Dictation are enabled.":"Speech recognition is not available in this browser. Use MULTIWORK Mobile for deeper device-level voice controls.");return}
   if(state.voiceListening)return;
   stopWakeWord(true);
   const recognition=new SpeechRecognition();
