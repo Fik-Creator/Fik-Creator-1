@@ -4,7 +4,7 @@
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>MULTIWORK AI — Your work. Smarter.</title><meta name="theme-color" content="#080d17"><link rel="icon" type="image/svg+xml" href="assets/multiwork-mark.svg">
 <meta name="description" content="MULTIWORK AI — an intelligent command center for your work, priorities, people and schedule.">
-<meta name="color-scheme" content="dark"><meta name="multiwork-build" content="2026-09-29-contextual-permissions-v1">
+<meta name="color-scheme" content="dark"><meta name="multiwork-build" content="2026-09-29-contextual-permissions-v2">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
 <style>
@@ -520,14 +520,30 @@ function requestCapability(capability,request=""){
   const resume=String(request||"").trim();
   if(resume)sessionStorage.setItem("multiwork_pending_action",JSON.stringify({request:resume,capability:cap,createdAt:Date.now()}));
   const body='<div style="color:#aeb8c9;font-size:12px;line-height:1.7">'+
-    '<p style="margin-top:0"><b style="color:#fff">MULTIWORK needs '+escapeHtml(label)+' access</b></p>'+
-    '<p>To complete this request, connect your '+escapeHtml(label)+' account. Google will show exactly what MULTIWORK is asking to access.</p>'+
+    '<p style="margin-top:0"><b style="color:#fff">I need '+escapeHtml(label)+' permission</b></p>'+
+    '<p>You asked MULTIWORK to use a connected service. Approve the access below and I’ll continue the request automatically.</p>'+
     '<div style="display:grid;gap:8px;margin-top:12px"><span>• Calendar: read upcoming events</span><span>• Contacts: read saved people</span><span>• Gmail: read message metadata for context</span></div>'+
-    '<p style="margin-bottom:0;color:#7587a2">Approve only the permissions you are comfortable giving. You can disconnect Google later from Connect.</p></div>';
-  showModal("Permission required","MULTIWORK needs a connected source to complete this command.",body,"Connect & continue");
+    '<p style="margin-bottom:0;color:#7587a2">Google controls the actual permission screen. You can disconnect it later.</p></div>';
+  showModal("Permission required","One approval unlocks this command and future commands that need the same source.",body,"Allow & continue");
   $("#modalPrimary").onclick=async()=>{
     $("#modal").classList.remove("open");
-    await connectGoogle();
+    if(!state.user){toast("Sign in required","Sign in before connecting an external service.");return}
+    try{
+      const {data,error}=await supabase.auth.linkIdentity({
+        provider:"google",
+        options:{
+          scopes:GOOGLE_SCOPES,
+          queryParams:{access_type:"offline",prompt:"consent"},
+          redirectTo:window.location.origin+window.location.pathname
+        }
+      });
+      if(error)throw error;
+      if(data?.url)window.location.href=data.url;
+    }catch(error){
+      const msg=String(error?.message||"Google connection failed");
+      if(/unsupported provider|provider.*not enabled/i.test(msg))toast("Google connector not configured","Enable the Google provider in Supabase Authentication to continue.");
+      else toast("Permission connection failed",msg);
+    }
   };
 }
 async function ensureCapability(capability,request=""){
@@ -590,9 +606,9 @@ async function googleFetch(url,options={}){
   if(!res.ok) throw new Error("Google API returned "+res.status);
   return res.json();
 }
-async function syncGoogle(){
-  if(!googleConnected()){requestCapability("google","sync my Google data");return}
-  if(!state.googleToken){toast("Google connection needs refresh","Reconnect Google so MULTIWORK can access the live data.");requestCapability("google","sync my Google data");return}
+async function syncGoogle(options={}){\n  const silent=!!options.silent;
+  if(!googleConnected()){if(!silent)requestCapability("google","sync my Google data");return false}
+  if(!state.googleToken){if(!silent)toast("Google connection needs refresh","Reconnect Google so MULTIWORK can access the live data.");if(!silent)requestCapability("google","sync my Google data");return false}
   const uid=state.user.id;
   const now=new Date(), past=new Date(now.getTime()-7*86400000), future=new Date(now.getTime()+30*86400000);
   try{
@@ -627,7 +643,7 @@ async function syncGoogle(){
     await upsertIntegration("google","connected",["calendar","contacts","email"],{email:state.user.email});
     await loadWorkspace();
     toast("Google synced",eventCount+" calendar events · "+personCount+" contacts · "+mailCount+" emails imported.");
-    $("#syncStatus").textContent="Last synced just now.";
+    $("#syncStatus").textContent="Last synced just now.";\n    return true;
   }catch(err){
     console.error(err);toast("Google sync failed",err.message);
     await upsertIntegration("google","error",[],{});
@@ -875,8 +891,18 @@ function commandAnswer(raw,target,options={}){
   const needsGoogle=/\b(gmail|email|inbox|mailbox|email[s]?|calendar|meeting|meetings|schedule|appointment|appointments|contacts?|address book|google)\b/i.test(q);
   const asksToConnect=/\b(connect|link|authorize|allow|grant|give)\b/i.test(q);
   if(asksToConnect && /\b(gmail|google|calendar|contacts?|email|mail)\b/i.test(q)){
-    connectGoogle();
+    requestCapability(
+      /\b(gmail|email|mail)\b/i.test(q)?"gmail":
+      /\b(calendar|meeting|schedule)\b/i.test(q)?"calendar":
+      /\bcontacts?|address book/.test(q)?"contacts":"google",
+      raw
+    );
     if(voice)speakAssistant("I’ll open the permission screen now.");
+    return;
+  }
+  if(asksToConnect){
+    setView("connect");
+    if(voice)speakAssistant("Opening the connection center.");
     return;
   }
   if(needsGoogle && !googleConnected()){
@@ -985,7 +1011,11 @@ function commandAnswer(raw,target,options={}){
     const reply=future?future.title+" at "+time(future.starts_at)+".":"You have no upcoming meeting in the loaded calendar.";
     toast("Next meeting",reply);if(voice)speakAssistant(reply);return;
   }
-  let title="MULTIWORK AI",msg="I can act on your workspace data now.";if(q.startsWith("remind me to ")||q.startsWith("remember to ")){
+  let title="MULTIWORK AI",msg="I can act on your workspace data now.";
+  if(needsGoogle && googleConnected() && /\b(read|check|show|what|who|when|find|search|summarize|latest|today|tomorrow|upcoming)\b/i.test(q)){
+    syncGoogle({silent:true}).catch(()=>{});
+  }
+  if(q.startsWith("remind me to ")||q.startsWith("remember to ")){
   const title=raw.replace(/^remind me to |^remember to /i,"").trim();
   if(!title){toast("Tell me what to remember","Say something like: remind me to call Daniel.");return}
   showModal("Create reminder task","I can add this to your executive queue.",'<div style="color:#aeb8c9;font-size:12px;line-height:1.7">MULTIWORK will save <b style="color:#fff">'+escapeHtml(title)+'</b> as an open task. You can add a due date before saving.</div><div class="field" style="margin-top:14px"><label>DUE DATE</label><input class="modalInput" id="voiceDue" type="datetime-local"></div>','Save reminder');
