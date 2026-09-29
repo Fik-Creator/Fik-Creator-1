@@ -284,10 +284,7 @@ function toggleWakeWord(){
   if(state.wakeListening||state.wakeEnabled){state.wakeEnabled=false;localStorage.removeItem("multiwork_wake_word");stopWakeWord();toast("Wake word off","Say “Hi MULTIWORK” again after turning it back on.");}
   else {startWakeWord();toast("Wake word on","Keep MULTIWORK open and say “Hi MULTIWORK”.");}
 }
-function speakAssistant(text){
-  if(!("speechSynthesis" in window)||!text)return;
-  try{window.speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(String(text).slice(0,1200));u.lang="en-NG";u.rate=.96;u.pitch=1;window.speechSynthesis.speak(u)}catch{}
-}
+
 function startVoiceCommand(){
   const SpeechRecognition=getSpeechRecognition();
   if(!SpeechRecognition){toast("Voice unavailable","Speech recognition is not available in this browser. MULTIWORK Mobile will provide deeper device-level voice controls.");return}
