@@ -31,7 +31,7 @@ class OverlayReminderService : Service() {
         startForeground(
             702,
             NotificationCompat.Builder(this, channel)
-                .setSmallIcon(android.R.drawable.ic_popup_reminder)
+                .setSmallIcon(android.R.drawable.ic_btn_speak_now)
                 .setContentTitle("MULTIWORK reminder")
                 .setContentText("A reminder is active.")
                 .setOngoing(false)
@@ -114,9 +114,14 @@ class OverlayReminderService : Service() {
             y = 70
         }
 
-        overlay = card
-        windowManager?.addView(card, params)
-        Handler(mainLooper).postDelayed({ removeOverlayAndStop() }, 12000)
+        try {
+            overlay = card
+            windowManager?.addView(card, params)
+            Handler(mainLooper).postDelayed({ removeOverlayAndStop() }, 12000)
+        } catch (_: Exception) {
+            overlay = null
+            stopSelf()
+        }
     }
 
     private fun removeOverlayAndStop() {
