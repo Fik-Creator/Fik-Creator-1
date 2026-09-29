@@ -4,7 +4,7 @@
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>MULTIWORK AI — Your work. Smarter.</title><meta name="theme-color" content="#080d17"><link rel="icon" type="image/svg+xml" href="assets/multiwork-mark.svg">
 <meta name="description" content="MULTIWORK AI — an intelligent command center for your work, priorities, people and schedule.">
-<meta name="color-scheme" content="dark"><meta name="multiwork-build" content="2026-09-29-siri-mode-v1">
+<meta name="color-scheme" content="dark"><meta name="multiwork-build" content="2026-09-29-contextual-permissions-v1">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
 <style>
@@ -247,9 +247,10 @@ async function initAuth(){
       showApp();
       renderAll();
       consumeVoiceIntent();
-      withTimeout(loadWorkspace(),12000).catch(err=>{
+      withTimeout(loadWorkspace(),12000).then(()=>resumePendingAction()).catch(err=>{
         console.error("MULTIWORK workspace load:",err);
         toast("Workspace syncing",err.message||"Some data will appear shortly.");
+        resumePendingAction().catch(()=>{});
       });
     }else{
       showAuth("signin");
@@ -264,7 +265,7 @@ supabase.auth.onAuthStateChange((event,session)=>{
       state.user={id:session.user.id,email:session.user.email||"",name:session.user.user_metadata?.full_name||session.user.email?.split("@")[0]||"Executive"};
       showApp();renderAll();
       consumeVoiceIntent();
-      loadWorkspace().catch(err=>console.error("Auth state workspace load:",err));
+      loadWorkspace().then(()=>resumePendingAction()).catch(err=>{console.error("Auth state workspace load:",err);resumePendingAction().catch(()=>{});});
     }
     if(event==="SIGNED_OUT"){
       state.user=null;state.profile=null;state.tasks=[];state.events=[];state.contacts=[];state.external=[];state.notes=[];state.integrations=[];state.googleToken=null;state.googleRefreshToken=null;state.googleConnected=false;
@@ -497,21 +498,85 @@ async function requestNotifications(){
   toast("Notifications",p==="granted"?"MULTIWORK can notify you about important attention items.":"Notifications remain off.");
 }
 
+const CONNECT_INTENT_RE=/\b(connect|link|authorize|give|grant|allow|access)\b.*\b(gmail|google|calendar|contacts?|email|mail)\b/i;
+const GOOGLE_CAPABILITIES=["gmail","calendar","contacts","google"];
+function googleConnected(){
+  return !!state.googleToken||!!state.googleConnected||state.integrations.some(x=>x.provider==="google"&&x.status==="connected");
+}
+function normalizeCapability(capability="google"){
+  const c=String(capability).toLowerCase();
+  if(/gmail|email|mail/.test(c))return "gmail";
+  if(/calendar|meeting|schedule|event/.test(c))return "calendar";
+  if(/contact|people|address book/.test(c))return "contacts";
+  return "google";
+}
+function capabilityLabel(capability){
+  const c=normalizeCapability(capability);
+  return c==="gmail"?"Gmail":c==="calendar"?"Google Calendar":c==="contacts"?"Google Contacts":"Google";
+}
+function requestCapability(capability,request=""){
+  const cap=normalizeCapability(capability);
+  const label=capabilityLabel(cap);
+  const resume=String(request||"").trim();
+  if(resume)sessionStorage.setItem("multiwork_pending_action",JSON.stringify({request:resume,capability:cap,createdAt:Date.now()}));
+  const body='<div style="color:#aeb8c9;font-size:12px;line-height:1.7">'+
+    '<p style="margin-top:0"><b style="color:#fff">MULTIWORK needs '+escapeHtml(label)+' access</b></p>'+
+    '<p>To complete this request, connect your '+escapeHtml(label)+' account. Google will show exactly what MULTIWORK is asking to access.</p>'+
+    '<div style="display:grid;gap:8px;margin-top:12px"><span>• Calendar: read upcoming events</span><span>• Contacts: read saved people</span><span>• Gmail: read message metadata for context</span></div>'+
+    '<p style="margin-bottom:0;color:#7587a2">Approve only the permissions you are comfortable giving. You can disconnect Google later from Connect.</p></div>';
+  showModal("Permission required","MULTIWORK needs a connected source to complete this command.",body,"Connect & continue");
+  $("#modalPrimary").onclick=async()=>{
+    $("#modal").classList.remove("open");
+    await connectGoogle();
+  };
+}
+async function ensureCapability(capability,request=""){
+  const cap=normalizeCapability(capability);
+  if(cap==="google"||GOOGLE_CAPABILITIES.includes(cap)){
+    if(googleConnected())return true;
+    requestCapability(cap,request);
+    return false;
+  }
+  return true;
+}
+function pendingCapability(){
+  try{
+    const raw=sessionStorage.getItem("multiwork_pending_action");
+    return raw?JSON.parse(raw):null;
+  }catch{return null}
+}
+function clearPendingCapability(){sessionStorage.removeItem("multiwork_pending_action")}
+async function resumePendingAction(){
+  const pending=pendingCapability();
+  if(!pending?.request)return;
+  if(Date.now()-(pending.createdAt||Date.now())>15*60*1000){clearPendingCapability();return}
+  if(!googleConnected())return;
+  clearPendingCapability();
+  setTimeout(()=>commandAnswer(pending.request,"command",{voice:true,resumedAfterPermission:true}),450);
+}
 async function connectGoogle(){
-  if(!state.user){toast("Sign in first","Google is an optional data connection, not a MULTIWORK sign-in method.");return}
+  if(!state.user){toast("Sign in first","Connectors require an active MULTIWORK account.");return false}
   showModal("Connect Google data","MULTIWORK will open Google's permission screen. Your MULTIWORK account stays separate.","<div style='color:#aeb8c9;font-size:12px;line-height:1.7'><p style='margin-top:0'><b style='color:#fff'>Requested access</b></p><div style='display:grid;gap:8px'><span>• Calendar: read upcoming events</span><span>• Contacts: read saved people</span><span>• Gmail: read message metadata for context</span></div><p style='margin-bottom:0;color:#7587a2'>You choose the permission in Google. MULTIWORK can be disconnected later.</p></div>","Continue to Google");
   $("#modalPrimary").onclick=async()=>{
     $("#modal").classList.remove("open");
     try{
-      const {data,error}=await supabase.auth.linkIdentity({provider:"google",options:{scopes:GOOGLE_SCOPES,queryParams:{access_type:"offline",prompt:"consent"},redirectTo:window.location.origin+window.location.pathname}});
+      const {data,error}=await supabase.auth.linkIdentity({
+        provider:"google",
+        options:{
+          scopes:GOOGLE_SCOPES,
+          queryParams:{access_type:"offline",prompt:"consent"},
+          redirectTo:window.location.origin+window.location.pathname
+        }
+      });
       if(error)throw error;
       if(data?.url)window.location.href=data.url;
     }catch(error){
       const msg=String(error?.message||"Google connection failed");
-      if(/unsupported provider|provider.*not enabled/i.test(msg))toast("Google connector not configured","MULTIWORK sign-in is unaffected. Enable the Google provider later to activate the optional permission flow.");
+      if(/unsupported provider|provider.*not enabled/i.test(msg))toast("Google connector not configured","Enable the Google provider in Supabase Authentication to use contextual Google permissions.");
       else toast("Google connection failed",msg);
     }
   };
+  return true;
 }
 async function upsertIntegration(provider,status,capabilities,metadata={}){
   if(!state.user)return;
@@ -526,7 +591,8 @@ async function googleFetch(url,options={}){
   return res.json();
 }
 async function syncGoogle(){
-  if(!state.googleToken){toast("Connect Google first","Use Connect in the integration center.");return}
+  if(!googleConnected()){requestCapability("google","sync my Google data");return}
+  if(!state.googleToken){toast("Google connection needs refresh","Reconnect Google so MULTIWORK can access the live data.");requestCapability("google","sync my Google data");return}
   const uid=state.user.id;
   const now=new Date(), past=new Date(now.getTime()-7*86400000), future=new Date(now.getTime()+30*86400000);
   try{
@@ -806,6 +872,23 @@ function commandAnswer(raw,target,options={}){
   const q=raw.trim().toLowerCase();
   if(!q){toast("Ask MULTI","Tell me what you need.");return}
   const voice=!!options?.voice;
+  const needsGoogle=/\b(gmail|email|inbox|mailbox|email[s]?|calendar|meeting|meetings|schedule|appointment|appointments|contacts?|address book|google)\b/i.test(q);
+  const asksToConnect=/\b(connect|link|authorize|allow|grant|give)\b/i.test(q);
+  if(asksToConnect && /\b(gmail|google|calendar|contacts?|email|mail)\b/i.test(q)){
+    connectGoogle();
+    if(voice)speakAssistant("I’ll open the permission screen now.");
+    return;
+  }
+  if(needsGoogle && !googleConnected()){
+    requestCapability(
+      /\b(gmail|email|inbox|mailbox|email[s]?|mail)\b/i.test(q)?"gmail":
+      /\b(calendar|meeting|meetings|schedule|appointment|appointments)\b/i.test(q)?"calendar":
+      /\b(contacts?|address book)\b/i.test(q)?"contacts":"google",
+      raw
+    );
+    if(voice)speakAssistant("I need permission to access that service. I’ll connect it for you.");
+    return;
+  }
 
   if(/\b(stop|disable|turn off)\b.*\b(wake word|wake listening|hi multiwork)\b/.test(q)){
     if(state.wakeListening||state.wakeEnabled){stopWakeWord(false);localStorage.removeItem("multiwork_wake_word");}
