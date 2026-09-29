@@ -4,7 +4,7 @@
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>MULTIWORK AI — Your work. Smarter.</title><meta name="theme-color" content="#080d17"><link rel="icon" type="image/svg+xml" href="assets/multiwork-mark.svg">
 <meta name="description" content="MULTIWORK AI — an intelligent command center for your work, priorities, people and schedule.">
-<meta name="color-scheme" content="dark"><meta name="multiwork-build" content="2026-09-29-voice-bell">
+<meta name="color-scheme" content="dark"><meta name="multiwork-build" content="2026-09-29-ai-voice-v2">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
 <style>
@@ -280,9 +280,19 @@ function captureProviderToken(session){
   if(session?.user && session.user.app_metadata?.provider==="google") state.googleConnected=true;
 }
 const GOOGLE_SCOPES=["openid","email","profile","https://www.googleapis.com/auth/calendar.events.readonly","https://www.googleapis.com/auth/contacts.readonly","https://www.googleapis.com/auth/gmail.readonly"].join(" ");
-function speakAssistant(text){
-  if(!("speechSynthesis" in window)||!text)return;
-  try{window.speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(String(text).slice(0,1200));u.lang="en-NG";u.rate=.96;u.pitch=1;window.speechSynthesis.speak(u)}catch{}
+function speakAssistant(text,onend){
+  if(!("speechSynthesis" in window)||!text){onend?.();return}
+  try{
+    window.speechSynthesis.cancel();
+    const u=new SpeechSynthesisUtterance(String(text).slice(0,1200));
+    u.lang="en-NG";
+    u.rate=.94;
+    u.pitch=1;
+    u.volume=1;
+    u.onend=()=>onend?.();
+    u.onerror=()=>onend?.();
+    window.speechSynthesis.speak(u);
+  }catch{onend?.()}
 }
 function isIOSLike(){
   return /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform==="MacIntel"&&navigator.maxTouchPoints>1);
@@ -329,14 +339,15 @@ function startWakeWord(){
     const command=(match[2]||"").trim();
     stopWakeWord(true);
     toast("MULTIWORK activated",command?"Processing your command.":"I'm listening for your command.");
-    if(command){
-      $("#command").value=command;
-      commandAnswer(command,"command",{voice:true});
-      speakAssistant("Got it.");
-    }else{
-      // Avoid speech-synthesis immediately before microphone activation; WebKit/iOS can stop recognition when TTS and SpeechRecognition overlap.
-      setTimeout(()=>startVoiceCommand(true),350);
-    }
+    speakAssistant("Hi, I am listening.",()=>{
+      if(command){
+        $("#command").value=command;
+        commandAnswer(command,"command",{voice:true});
+      }else{
+        // Start recognition only after the acknowledgement finishes so the assistant does not hear its own voice.
+        setTimeout(()=>startVoiceCommand(true,false),80);
+      }
+    });
   };
   r.onerror=e=>{
     if(e.error==="not-allowed"){
@@ -362,30 +373,37 @@ function toggleWakeWord(){
     toast("Wake word on","Say “Hi MULTIWORK” and MULTIWORK will automatically start listening for the command that follows.");
   }
 }
-function startVoiceCommand(fromWake=false){
+function startVoiceCommand(fromWake=false,announce=true){
   const SpeechRecognition=getSpeechRecognition();
   if(!SpeechRecognition){toast("Voice unavailable",isIOSLike()?"On iPhone/iPad, use Safari and make sure Siri & Dictation are enabled.":"Speech recognition is not available in this browser. Use MULTIWORK Mobile for deeper device-level voice controls.");return}
   if(state.voiceListening)return;
   stopWakeWord(true);
   const recognition=new SpeechRecognition();
   recognition.lang="en-NG";recognition.interimResults=false;recognition.continuous=false;recognition.maxAlternatives=1;
-  const btn=$("#voiceCommand");state.voiceListening=true;setVoiceButton(true);
-  recognition.onstart=()=>toast("MULTIWORK is listening",fromWake?"Say your command now.":"Tell me a task, question, or command.");
-  recognition.onresult=e=>{
-    const spoken=e.results?.[0]?.[0]?.transcript?.trim()||"";
-    if(!spoken){toast("I didn't catch that","Try speaking again.");return}
-    $("#command").value=spoken;
-    commandAnswer(spoken,"command",{voice:true});
+  const beginListening=()=>{
+    const btn=$("#voiceCommand");state.voiceListening=true;setVoiceButton(true);
+    recognition.onstart=()=>toast("MULTIWORK is listening",fromWake?"Say your command now.":"Tell me a task, question, or command.");
+    recognition.onresult=e=>{
+      const spoken=e.results?.[0]?.[0]?.transcript?.trim()||"";
+      if(!spoken){toast("I didn't catch that","Try speaking again.");return}
+      $("#command").value=spoken;
+      commandAnswer(spoken,"command",{voice:true});
+    };
+    recognition.onerror=e=>{
+      state.voiceListening=false;setVoiceButton(false);
+      toast("Voice stopped",e.error==="not-allowed"?"Microphone permission was denied.":(e.error||"Speech recognition failed"));
+    };
+    recognition.onend=()=>{
+      state.voiceListening=false;setVoiceButton(false);
+      if(state.wakeEnabled&&!document.hidden)setTimeout(startWakeWord,650);
+    };
+    try{recognition.start()}catch(err){state.voiceListening=false;setVoiceButton(false);toast("Voice unavailable",err.message)}
   };
-  recognition.onerror=e=>{
-    state.voiceListening=false;setVoiceButton(false);
-    toast("Voice stopped",e.error==="not-allowed"?"Microphone permission was denied.":(e.error||"Speech recognition failed"));
-  };
-  recognition.onend=()=>{
-    state.voiceListening=false;setVoiceButton(false);
-    if(state.wakeEnabled&&!document.hidden)setTimeout(startWakeWord,650);
-  };
-  try{recognition.start()}catch(err){state.voiceListening=false;setVoiceButton(false);toast("Voice unavailable",err.message)}
+  if(announce){
+    speakAssistant("Hi, I am listening.",()=>setTimeout(beginListening,80));
+  }else{
+    beginListening();
+  }
 }
 async function requestNotifications(){
   if(!("Notification" in window)){toast("Notifications unavailable","Your browser does not support notifications.");return}
