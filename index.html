@@ -4,14 +4,14 @@
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>MULTIWORK AI — Your work. Smarter.</title><meta name="theme-color" content="#080d17"><link rel="icon" type="image/svg+xml" href="assets/multiwork-mark.svg">
 <meta name="description" content="MULTIWORK AI — an intelligent command center for your work, priorities, people and schedule.">
-<meta name="color-scheme" content="dark"><meta name="multiwork-build" content="2026-09-29-ai-voice-v2">
+<meta name="color-scheme" content="dark"><meta name="multiwork-build" content="2026-09-29-siri-mode-v1">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
 <style>
 :root{--red:#3678ff;--red2:#9a4dff;--bg:#070b16;--panel:#0e1628;--panel2:#111c31;--line:#1d2b46;--muted:#8794ae;--soft:#cbd6e8;--white:#f7f9ff;--green:#4ade9b;--amber:#5fcfff;--blue:#16b9ff;--violet:#9a4dff}
 *{box-sizing:border-box}html,body{margin:0;min-height:100%;background:var(--bg);color:var(--white);font-family:"DM Sans",sans-serif}body{overflow-x:hidden}button,input,select{font:inherit}button{cursor:pointer}button:disabled{cursor:not-allowed;opacity:.55}
 body:before{content:"";position:fixed;inset:0;pointer-events:none;background:radial-gradient(circle at 80% 0%,rgba(22,185,255,.11),transparent 30%),radial-gradient(circle at 20% 100%,rgba(154,77,255,.07),transparent 32%);z-index:-1}
-.hidden{display:none!important}.screen{min-height:100vh}.auth{display:grid;grid-template-columns:1.05fr .95fr;min-height:100vh}.authBrand{padding:7vw;display:flex;flex-direction:column;justify-content:space-between;background:linear-gradient(145deg,#0a0a0b,#111113)}.logo{display:flex;align-items:center;gap:11px}.mark{width:34px;height:34px;border-radius:10px;display:grid;place-items:center;overflow:hidden;box-shadow:0 10px 30px rgba(63,120,255,.25);flex:none}.mark img{width:100%;height:100%;display:block}.logo b{font-family:Manrope;letter-spacing:.14em;font-size:15px}.brandCopy{max-width:620px}.brandCopy .eyebrow{color:var(--red2);text-transform:uppercase;letter-spacing:.18em;font-size:10px;font-weight:700;margin-bottom:15px}.brandCopy h1{font-family:Manrope;font-size:clamp(38px,5vw,72px);line-height:.98;letter-spacing:-.05em;margin:0 0 20px}.brandCopy p{max-width:520px;color:#8b8e97;line-height:1.7;font-size:14px}.brandFoot{color:#5f626a;font-size:11px}.authPanel{display:flex;align-items:center;justify-content:center;padding:28px;background:#080809}.authCard{width:min(440px,100%);padding:34px}.authCard h2{font-family:Manrope;font-size:30px;letter-spacing:-.03em;margin:0 0 8px}.authCard>p{color:#777a82;font-size:12px;line-height:1.6;margin:0 0 25px}.tabs{display:grid;grid-template-columns:1fr 1fr;background:#111214;border:1px solid var(--line);padding:4px;border-radius:11px;margin-bottom:22px}.tabs button{border:0;background:transparent;color:#777a82;padding:9px;border-radius:8px;font-size:11px}.tabs button.active{background:#222429;color:#fff}.field{margin-bottom:14px}.field label{display:block;color:#8b8e97;font-size:10px;margin-bottom:7px}.field input,.field select{width:100%;border:1px solid #303239;background:#101113;color:#fff;border-radius:10px;padding:12px 13px;outline:0}.field input:focus,.field select:focus{border-color:#355f9c;box-shadow:0 0 0 3px rgba(54,120,255,.10)}.authAction{width:100%;border:0;background:linear-gradient(90deg,var(--blue),var(--violet));color:#fff;border-radius:10px;padding:13px;font-weight:700;font-size:12px;margin-top:5px}.wakeToggle{border:1px solid #273955;background:#0d1728;color:#7f91ac;border-radius:9px;padding:8px 10px;font-size:9px;font-weight:700;white-space:nowrap}.wakeToggle.active{border-color:#3d8dff;color:#dff1ff;background:#102542}.voiceBtn{min-width:38px;padding:10px 11px!important}.voiceBtn.listening{background:linear-gradient(90deg,#ff5f6d,#ff9966)!important;color:#fff!important;box-shadow:0 0 0 4px rgba(255,95,109,.12)}.authDivider{display:flex;align-items:center;gap:10px;color:#565b66;font-size:9px;margin:16px 0}.authDivider:before,.authDivider:after{content:"";height:1px;background:#242b39;flex:1}.googleAuthBtn{width:100%;border:1px solid #2b3a53;background:#101a2b;color:#eef5ff;border-radius:10px;padding:11px;font-weight:700;font-size:11px;display:flex;align-items:center;justify-content:center;gap:9px}.googleAuthBtn:hover{background:#14223a;border-color:#3a5478}.googleMark{width:20px;height:20px;border-radius:50%;display:grid;place-items:center;background:#fff;color:#4285f4;font-weight:800;font-family:Arial}.authSwitch{text-align:center;color:#696c74;font-size:10px;margin-top:18px}.link{border:0;background:transparent;color:#e6e6e4;text-decoration:underline;font-size:10px;padding:0}.error{color:#ff91a5;background:#152033;border:1px solid #29466d;border-radius:9px;padding:10px;font-size:10px;margin-bottom:13px}.success{color:#78dda5;background:#10251e;border:1px solid #24563f;border-radius:9px;padding:10px;font-size:10px;margin-bottom:13px}
+.hidden{display:none!important}.screen{min-height:100vh}.auth{display:grid;grid-template-columns:1.05fr .95fr;min-height:100vh}.authBrand{padding:7vw;display:flex;flex-direction:column;justify-content:space-between;background:linear-gradient(145deg,#0a0a0b,#111113)}.logo{display:flex;align-items:center;gap:11px}.mark{width:34px;height:34px;border-radius:10px;display:grid;place-items:center;overflow:hidden;box-shadow:0 10px 30px rgba(63,120,255,.25);flex:none}.mark img{width:100%;height:100%;display:block}.logo b{font-family:Manrope;letter-spacing:.14em;font-size:15px}.brandCopy{max-width:620px}.brandCopy .eyebrow{color:var(--red2);text-transform:uppercase;letter-spacing:.18em;font-size:10px;font-weight:700;margin-bottom:15px}.brandCopy h1{font-family:Manrope;font-size:clamp(38px,5vw,72px);line-height:.98;letter-spacing:-.05em;margin:0 0 20px}.brandCopy p{max-width:520px;color:#8b8e97;line-height:1.7;font-size:14px}.brandFoot{color:#5f626a;font-size:11px}.authPanel{display:flex;align-items:center;justify-content:center;padding:28px;background:#080809}.authCard{width:min(440px,100%);padding:34px}.authCard h2{font-family:Manrope;font-size:30px;letter-spacing:-.03em;margin:0 0 8px}.authCard>p{color:#777a82;font-size:12px;line-height:1.6;margin:0 0 25px}.tabs{display:grid;grid-template-columns:1fr 1fr;background:#111214;border:1px solid var(--line);padding:4px;border-radius:11px;margin-bottom:22px}.tabs button{border:0;background:transparent;color:#777a82;padding:9px;border-radius:8px;font-size:11px}.tabs button.active{background:#222429;color:#fff}.field{margin-bottom:14px}.field label{display:block;color:#8b8e97;font-size:10px;margin-bottom:7px}.field input,.field select{width:100%;border:1px solid #303239;background:#101113;color:#fff;border-radius:10px;padding:12px 13px;outline:0}.field input:focus,.field select:focus{border-color:#355f9c;box-shadow:0 0 0 3px rgba(54,120,255,.10)}.authAction{width:100%;border:0;background:linear-gradient(90deg,var(--blue),var(--violet));color:#fff;border-radius:10px;padding:13px;font-weight:700;font-size:12px;margin-top:5px}.wakeToggle{border:1px solid #273955;background:#0d1728;color:#7f91ac;border-radius:9px;padding:8px 10px;font-size:9px;font-weight:700;white-space:nowrap}.wakeToggle.active{border-color:#3d8dff;color:#dff1ff;background:#102542}.voiceBtn{min-width:44px;padding:10px 13px!important}.voiceBtn.listening{background:linear-gradient(90deg,#ff5f6d,#ff9966)!important;color:#fff!important;box-shadow:0 0 0 4px rgba(255,95,109,.12)}.authDivider{display:flex;align-items:center;gap:10px;color:#565b66;font-size:9px;margin:16px 0}.authDivider:before,.authDivider:after{content:"";height:1px;background:#242b39;flex:1}.googleAuthBtn{width:100%;border:1px solid #2b3a53;background:#101a2b;color:#eef5ff;border-radius:10px;padding:11px;font-weight:700;font-size:11px;display:flex;align-items:center;justify-content:center;gap:9px}.googleAuthBtn:hover{background:#14223a;border-color:#3a5478}.googleMark{width:20px;height:20px;border-radius:50%;display:grid;place-items:center;background:#fff;color:#4285f4;font-weight:800;font-family:Arial}.authSwitch{text-align:center;color:#696c74;font-size:10px;margin-top:18px}.link{border:0;background:transparent;color:#e6e6e4;text-decoration:underline;font-size:10px;padding:0}.error{color:#ff91a5;background:#152033;border:1px solid #29466d;border-radius:9px;padding:10px;font-size:10px;margin-bottom:13px}.success{color:#78dda5;background:#10251e;border:1px solid #24563f;border-radius:9px;padding:10px;font-size:10px;margin-bottom:13px}
 .app{display:grid;grid-template-columns:238px 1fr;min-height:100vh}.sidebar{border-right:1px solid var(--line);padding:26px 17px;position:sticky;top:0;height:100vh;background:rgba(8,8,9,.9);backdrop-filter:blur(20px);z-index:10}.brand{display:flex;align-items:center;gap:11px;padding:4px 10px 34px}.brand b{font-family:Manrope;letter-spacing:.14em;font-size:14px}.nav{display:grid;gap:5px}.nav button{border:0;background:transparent;color:#90939b;text-align:left;padding:12px;border-radius:10px;display:flex;align-items:center;gap:11px;font-size:13px}.nav button.active,.nav button:hover{background:#18191c;color:#fff}.nav button.active{box-shadow:inset 2px 0 var(--blue)}.ico{width:17px;text-align:center}.sideBottom{position:absolute;left:17px;right:17px;bottom:19px;border-top:1px solid var(--line);padding-top:17px}.profile{display:flex;gap:10px;align-items:center;padding:8px}.avatar{width:35px;height:35px;border-radius:50%;background:linear-gradient(135deg,#2d2f34,#777);display:grid;place-items:center;font-size:11px;font-weight:700}.profile small{display:block;color:#747780;font-size:10px;margin-top:2px}
 .main{min-width:0}.top{height:74px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:0 38px;position:sticky;top:0;background:rgba(7,7,8,.82);backdrop-filter:blur(22px);z-index:5}.crumb{font-size:12px;color:#7e818a}.crumb strong{color:#e8e8e7}.topActions{display:flex;gap:9px;align-items:center}.circle{width:36px;height:36px;border:1px solid var(--line);background:#101113;color:#aaa;border-radius:50%}.datePill{font-size:11px;color:#9b9da4;border:1px solid var(--line);padding:8px 11px;border-radius:9px}.content{padding:40px 42px 80px;max-width:1480px;margin:auto}.view{display:none}.view.active{display:block}.hero{display:flex;justify-content:space-between;gap:30px;align-items:flex-end;margin-bottom:28px}.eyebrow{font-size:10px;text-transform:uppercase;letter-spacing:.18em;color:var(--red2);font-weight:700;margin-bottom:10px}.hero h1{font-family:Manrope;font-size:clamp(34px,4vw,48px);line-height:1.03;letter-spacing:-.04em;margin:0 0 10px}.hero p{color:#858890;margin:0;font-size:14px}.status{border:1px solid var(--line);background:rgba(17,18,20,.75);border-radius:12px;padding:12px 14px;min-width:205px}.status span{display:block;font-size:10px;color:#73767e;text-transform:uppercase;letter-spacing:.12em}.status b{font-size:13px;display:block;margin-top:5px}.dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--green);margin-right:6px;box-shadow:0 0 12px rgba(98,216,154,.6)}
 .command{display:flex;align-items:center;gap:12px;background:linear-gradient(135deg,#151619,#0f1012);border:1px solid #303238;border-radius:15px;padding:8px 9px 8px 15px;box-shadow:0 18px 60px rgba(0,0,0,.24);margin-bottom:16px}.spark{color:var(--red2);font-size:18px}.command input{background:transparent;border:0;outline:0;color:#fff;flex:1;font-size:14px;padding:11px 0;min-width:0}.command input::placeholder{color:#696c74}.ask,.primary{background:var(--white);color:#111;border:0;border-radius:10px;padding:10px 15px;font-size:12px;font-weight:700}.suggestions{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:25px}.suggestion{border:1px solid #292b30;background:#101113;color:#858891;border-radius:999px;padding:7px 10px;font-size:10px}.suggestion:hover{border-color:#4a252a;color:#fff}
@@ -105,7 +105,7 @@ body:before{content:"";position:fixed;inset:0;pointer-events:none;background:rad
 <div class="view active" id="view-today">
 <div class="hero"><div><div class="eyebrow">Executive command center</div><h1 id="greeting">Good morning.<br>Here’s what matters.</h1><p id="heroSub">Your workspace is organized around what needs you.</p></div><div class="status"><span>System status</span><b><i class="dot"></i><span style="display:inline;color:#fff;text-transform:none;letter-spacing:0">Workspace secured</span></b></div></div>
 <div class="command" aria-label="MULTIWORK command center"><span class="spark">✦</span><input id="command" placeholder="Ask MULTIWORK AI anything…" autocomplete="off"><button id="voiceCommand" class="ask voiceBtn" title="Speak a command" aria-label="Speak a command"><svg class="voiceIcon" viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3M8.5 21h7"/></svg></button><button id="wakeWordToggle" class="wakeToggle" type="button" title="Listen for Hi MULTIWORK">Wake word off</button><button class="ask" id="ask">Ask MULTI</button></div>
-<div class="voiceHint" id="voiceHint">Voice ready · say <b>“Hi MULTIWORK”</b> to hand your next sentence directly to MULTIWORK AI.</div><div class="suggestions"><button class="suggestion" data-prompt="What requires my attention?">What requires my attention?</button><button class="suggestion" data-prompt="What do I have today?">What do I have today?</button><button class="suggestion" data-prompt="I'm overwhelmed">I’m overwhelmed</button></div>
+<div class="voiceHint" id="voiceHint">Voice ready · say <b>“Hi MULTIWORK”</b> or tap the microphone. MULTIWORK can stay in a continuous command session.</div><div class="suggestions"><button class="suggestion" data-prompt="What requires my attention?">What requires my attention?</button><button class="suggestion" data-prompt="What do I have today?">What do I have today?</button><button class="suggestion" data-prompt="I'm overwhelmed">I’m overwhelmed</button></div>
 <div class="grid">
 <section class="panel"><div class="panelHead"><h2>Priority queue</h2><span id="priorityCount">Loading…</span></div><div class="priorities" id="priorityList"></div></section>
 <section class="panel"><div class="panelHead"><h2>Today</h2><span id="todayLabel"></span></div><div class="calendar"><div class="calTop"><b>Executive schedule</b><span id="eventCount"></span></div><div class="timeline" id="eventList"></div></div></section>
@@ -167,7 +167,7 @@ const $=s=>document.querySelector(s);
 const qsa=s=>document.querySelectorAll(s);
 
 // No startup overlay: the executive shell renders immediately; data hydrates in the background.
-const state={user:null,profile:null,tasks:[],events:[],contacts:[],external:[],notes:[],integrations:[],googleToken:null,googleRefreshToken:null,googleConnected:false,voiceListening:false,wakeListening:false,wakeEnabled:localStorage.getItem("multiwork_wake_word")==="1",view:"today"};
+const state={user:null,profile:null,tasks:[],events:[],contacts:[],external:[],notes:[],integrations:[],googleToken:null,googleRefreshToken:null,googleConnected:false,voiceListening:false,wakeListening:false,wakeEnabled:localStorage.getItem("multiwork_wake_word")==="1",voiceSession:false,voiceStopping:false,voiceIgnoreUntil:0,view:"today"};
 
 function toast(title,msg){const t=$("#toast");t.innerHTML="<b>"+escapeHtml(title)+"</b>"+escapeHtml(msg);t.classList.add("show");clearTimeout(window.__toast);window.__toast=setTimeout(()=>t.classList.remove("show"),3800)}
 function escapeHtml(v){return String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[c]))}
@@ -282,9 +282,12 @@ function captureProviderToken(session){
 const GOOGLE_SCOPES=["openid","email","profile","https://www.googleapis.com/auth/calendar.events.readonly","https://www.googleapis.com/auth/contacts.readonly","https://www.googleapis.com/auth/gmail.readonly"].join(" ");
 function speakAssistant(text,onend){
   if(!("speechSynthesis" in window)||!text){onend?.();return}
+  const spoken=String(text).slice(0,1400);
+  const duration=Math.min(10000,Math.max(1200,spoken.length*42));
+  state.voiceIgnoreUntil=Math.max(state.voiceIgnoreUntil,Date.now()+duration);
   try{
     window.speechSynthesis.cancel();
-    const u=new SpeechSynthesisUtterance(String(text).slice(0,1200));
+    const u=new SpeechSynthesisUtterance(spoken);
     u.lang="en-NG";
     u.rate=.94;
     u.pitch=1;
@@ -301,13 +304,27 @@ function getSpeechRecognition(){return window.SpeechRecognition||window.webkitSp
 function setVoiceButton(active){
   const b=$("#voiceCommand"); if(!b)return;
   b.classList.toggle("listening",!!active);
-  b.setAttribute("aria-label",active?"Listening for your command":"Speak a command");
-  b.title=active?"Listening for your command":"Speak a command";
+  b.setAttribute("aria-label",active?"Listening continuously":"Start voice assistant");
+  b.title=active?"Listening continuously":"Start voice assistant";
+}
+function setVoiceHint(text){
+  const h=$("#voiceHint"); if(h)h.innerHTML=text;
 }
 function updateWakeButton(){
   const b=$("#wakeWordToggle"); if(!b)return;
   b.textContent=state.wakeListening?"Listening for “Hi MULTIWORK”":(state.wakeEnabled?"Wake word on":"Wake word off");
   b.classList.toggle("active",state.wakeEnabled||state.wakeListening);
+}
+function stopVoiceCommand(disableSession=true){
+  state.voiceStopping=true;
+  if(disableSession)state.voiceSession=false;
+  const r=window.__voiceRecognition;
+  window.__voiceRecognition=null;
+  state.voiceListening=false;
+  setVoiceButton(false);
+  if(r)try{r.abort()}catch{}
+  if(disableSession)setVoiceHint('Voice ready · say <b>“Hi MULTIWORK”</b> or tap the microphone.');
+  setTimeout(()=>{state.voiceStopping=false},80);
 }
 function stopWakeWord(keepEnabled=false){
   const r=window.__wakeRecognition;
@@ -317,9 +334,105 @@ function stopWakeWord(keepEnabled=false){
   updateWakeButton();
   if(r)try{r.abort()}catch{}
 }
-function openVoiceAssistant(){
+function stripWakePrefix(text){
+  return String(text||"").replace(/^\s*(?:hey\s+)?multiwork\b[\s,.:;-]*/i,"").trim();
+}
+function voiceHandleUtterance(raw){
+  const spoken=stripWakePrefix(raw);
+  if(!spoken||Date.now()<state.voiceIgnoreUntil)return;
+  if(/^(stop|stop listening|stop voice|cancel assistant|go quiet|be quiet)$/i.test(spoken)){
+    speakAssistant("Okay. I’m stopping voice listening.",()=>stopVoiceCommand(true));
+    return;
+  }
+  if(/^(start listening|listen|resume listening|wake up)$/i.test(spoken)){
+    state.voiceSession=true;
+    startVoiceCommand(false,true,true);
+    return;
+  }
+  $("#command").value=spoken;
+  commandAnswer(spoken,"command",{voice:true,voiceSession:state.voiceSession});
+}
+function startVoiceCommand(fromWake=false,announce=true,session=true){
+  const SpeechRecognition=getSpeechRecognition();
+  if(!SpeechRecognition){toast("Voice unavailable",isIOSLike()?"On iPhone/iPad, use Safari and make sure Siri & Dictation are enabled.":"Speech recognition is not available in this browser. Use MULTIWORK Mobile for deeper device-level voice controls.");return}
+  if(state.voiceListening)return;
   stopWakeWord(true);
-  startVoiceCommand(true);
+  state.voiceSession=session;
+  state.voiceStopping=false;
+  const recognition=new SpeechRecognition();
+  recognition.lang="en-NG";
+  recognition.interimResults=false;
+  recognition.continuous=true;
+  recognition.maxAlternatives=1;
+  window.__voiceRecognition=recognition;
+  state.voiceListening=true;
+  setVoiceButton(true);
+  setVoiceHint('MULTIWORK is listening continuously · say <b>“stop listening”</b> when you are done.');
+
+  const safeSpeakAck=()=>{
+    if(!announce)return;
+    state.voiceIgnoreUntil=Math.max(state.voiceIgnoreUntil,Date.now()+1450);
+    speakAssistant("Hi, I am listening.");
+  };
+
+  recognition.onstart=()=>{
+    state.voiceListening=true;
+    setVoiceButton(true);
+    toast("MULTIWORK is listening",fromWake?"Say your next command.":"Say any task, question or instruction.");
+    // Start the mic first for the fastest possible response. Ignore the acknowledgement in recognition.
+    if(!isIOSLike())setTimeout(safeSpeakAck,60);
+  };
+  recognition.onresult=e=>{
+    let heard="";
+    for(let i=e.resultIndex;i<e.results.length;i++){
+      if(e.results[i]?.isFinal)heard+=(e.results[i][0]?.transcript||"")+" ";
+    }
+    heard=heard.trim();
+    if(heard)voiceHandleUtterance(heard);
+  };
+  recognition.onerror=e=>{
+    const fatal=["not-allowed","service-not-allowed"];
+    if(fatal.includes(e.error)){
+      state.voiceSession=false;
+      state.voiceListening=false;
+      setVoiceButton(false);
+      toast("Microphone permission needed","Allow microphone access for MULTIWORK voice control.");
+      setVoiceHint('Voice ready · say <b>“Hi MULTIWORK”</b> or tap the microphone.');
+    }
+  };
+  recognition.onend=()=>{
+    if(window.__voiceRecognition!==recognition)return;
+    window.__voiceRecognition=null;
+    state.voiceListening=false;
+    setVoiceButton(false);
+    if(state.voiceSession&&!state.voiceStopping&&!document.hidden){
+      setTimeout(()=>startVoiceCommand(false,false,true),220);
+    }else if(state.wakeEnabled&&!state.voiceSession&&!document.hidden){
+      setTimeout(startWakeWord,300);
+    }
+  };
+
+  // iOS/WebKit can terminate speech recognition when TTS overlaps, so acknowledge first there.
+  if(isIOSLike()&&announce){
+    window.__voiceRecognition=null;
+    state.voiceListening=false;
+    setVoiceButton(false);
+    speakAssistant("Hi, I am listening.",()=>{
+      state.voiceIgnoreUntil=Date.now()+250;
+      try{
+        recognition.start();
+      }catch{
+        try{recognition.start()}catch{}
+      }
+    });
+  }else{
+    try{recognition.start()}catch(err){
+      state.voiceListening=false;
+      setVoiceButton(false);
+      state.voiceSession=false;
+      toast("Voice unavailable",err.message||"Speech recognition could not start.");
+    }
+  }
 }
 function startWakeWord(){
   const SpeechRecognition=getSpeechRecognition();
@@ -330,24 +443,25 @@ function startWakeWord(){
   const r=new SpeechRecognition();
   r.lang="en-NG";r.continuous=true;r.interimResults=true;r.maxAlternatives=1;
   window.__wakeRecognition=r;state.wakeListening=true;updateWakeButton();
+  setVoiceHint('Wake word active · say <b>“Hi MULTIWORK”</b> followed by your instruction.');
+
   r.onresult=e=>{
     let heard="";
     for(let i=e.resultIndex;i<e.results.length;i++)heard+=(e.results[i][0]?.transcript||"")+" ";
     heard=heard.trim();
-    const match=heard.match(/\bhi\s+multiwork\b([\s,.:;-]*)(.*)$/i);
+    const match=heard.match(/\b(?:hey\s+)?hi\s+multiwork\b([\s,.:;-]*)(.*)$/i);
     if(!match)return;
     const command=(match[2]||"").trim();
     stopWakeWord(true);
-    toast("MULTIWORK activated",command?"Processing your command.":"I'm listening for your command.");
-    speakAssistant("Hi, I am listening.",()=>{
-      if(command){
+    state.voiceSession=true;
+    if(command){
+      speakAssistant("Hi, I am listening.",()=>{
         $("#command").value=command;
-        commandAnswer(command,"command",{voice:true});
-      }else{
-        // Start recognition only after the acknowledgement finishes so the assistant does not hear its own voice.
-        setTimeout(()=>startVoiceCommand(true,false),80);
-      }
-    });
+        commandAnswer(command,"command",{voice:true,voiceSession:true});
+      });
+    }else{
+      startVoiceCommand(true,true,true);
+    }
   };
   r.onerror=e=>{
     if(e.error==="not-allowed"){
@@ -359,50 +473,21 @@ function startWakeWord(){
   r.onend=()=>{
     if(window.__wakeRecognition!==r)return;
     window.__wakeRecognition=null;state.wakeListening=false;updateWakeButton();
-    if(state.wakeEnabled&&!state.voiceListening&&!document.hidden)setTimeout(startWakeWord,650);
+    if(state.wakeEnabled&&!state.voiceListening&&!document.hidden)setTimeout(startWakeWord,500);
   };
-  try{r.start()}catch{window.__wakeRecognition=null;state.wakeListening=false;updateWakeButton()}
+  try{r.start()}catch{
+    window.__wakeRecognition=null;state.wakeListening=false;updateWakeButton();
+  }
 }
 function toggleWakeWord(){
   if(state.wakeListening||state.wakeEnabled){
     stopWakeWord(false);
     localStorage.removeItem("multiwork_wake_word");
     toast("Wake word off","MULTIWORK will stop listening for “Hi MULTIWORK”.");
+    setVoiceHint('Voice ready · say <b>“Hi MULTIWORK”</b> or tap the microphone.');
   }else{
     startWakeWord();
-    toast("Wake word on","Say “Hi MULTIWORK” and MULTIWORK will automatically start listening for the command that follows.");
-  }
-}
-function startVoiceCommand(fromWake=false,announce=true){
-  const SpeechRecognition=getSpeechRecognition();
-  if(!SpeechRecognition){toast("Voice unavailable",isIOSLike()?"On iPhone/iPad, use Safari and make sure Siri & Dictation are enabled.":"Speech recognition is not available in this browser. Use MULTIWORK Mobile for deeper device-level voice controls.");return}
-  if(state.voiceListening)return;
-  stopWakeWord(true);
-  const recognition=new SpeechRecognition();
-  recognition.lang="en-NG";recognition.interimResults=false;recognition.continuous=false;recognition.maxAlternatives=1;
-  const beginListening=()=>{
-    const btn=$("#voiceCommand");state.voiceListening=true;setVoiceButton(true);
-    recognition.onstart=()=>toast("MULTIWORK is listening",fromWake?"Say your command now.":"Tell me a task, question, or command.");
-    recognition.onresult=e=>{
-      const spoken=e.results?.[0]?.[0]?.transcript?.trim()||"";
-      if(!spoken){toast("I didn't catch that","Try speaking again.");return}
-      $("#command").value=spoken;
-      commandAnswer(spoken,"command",{voice:true});
-    };
-    recognition.onerror=e=>{
-      state.voiceListening=false;setVoiceButton(false);
-      toast("Voice stopped",e.error==="not-allowed"?"Microphone permission was denied.":(e.error||"Speech recognition failed"));
-    };
-    recognition.onend=()=>{
-      state.voiceListening=false;setVoiceButton(false);
-      if(state.wakeEnabled&&!document.hidden)setTimeout(startWakeWord,650);
-    };
-    try{recognition.start()}catch(err){state.voiceListening=false;setVoiceButton(false);toast("Voice unavailable",err.message)}
-  };
-  if(announce){
-    speakAssistant("Hi, I am listening.",()=>setTimeout(beginListening,80));
-  }else{
-    beginListening();
+    toast("Wake word on","MULTIWORK will stay ready for “Hi MULTIWORK”.");
   }
 }
 async function requestNotifications(){
@@ -716,10 +801,109 @@ async function askAI(raw,target,options={}){
   }
 }
 
-function commandAnswer(raw,target,options={}){const q=raw.trim().toLowerCase();if(!q){toast("Ask MULTI","Tell me what you need.");return}
-if(/\b(connect|link|add)\b.*\b(gmail|google)\b/.test(q)){connectGoogle();return}
-if(/\b(sync|refresh)\b.*\b(gmail|google)\b/.test(q)){syncGoogle();return}
-let title="MULTIWORK AI",msg="I can act on your workspace data now.";if(q.startsWith("remind me to ")||q.startsWith("remember to ")){
+function commandAnswer(raw,target,options={}){
+  const q=raw.trim().toLowerCase();
+  if(!q){toast("Ask MULTI","Tell me what you need.");return}
+  const voice=!!options?.voice;
+
+  if(/\b(stop|disable|turn off)\b.*\b(wake word|wake listening|hi multiwork)\b/.test(q)){
+    if(state.wakeListening||state.wakeEnabled){stopWakeWord(false);localStorage.removeItem("multiwork_wake_word");}
+    if(voice)speakAssistant("Wake word is off.");
+    toast("Wake word off","MULTIWORK will no longer listen for “Hi MULTIWORK”.");
+    return;
+  }
+  if(/\b(turn on|enable|start)\b.*\b(wake word|wake listening|hi multiwork)\b/.test(q)){
+    startWakeWord();
+    if(voice)speakAssistant("Wake word is on.");
+    return;
+  }
+  if(/\b(stop listening|stop voice|be quiet|cancel assistant)\b/.test(q)){
+    speakAssistant("Okay. I’m stopping voice listening.",()=>stopVoiceCommand(true));
+    return;
+  }
+  if(/\b(connect|link|add)\b.*\b(gmail|google)\b/.test(q)){
+    connectGoogle();
+    if(voice)speakAssistant("Opening the Google connection.");
+    return;
+  }
+  if(/\b(sync|refresh)\b.*\b(gmail|google)\b/.test(q)){
+    syncGoogle();
+    if(voice)speakAssistant("I’m syncing your Google data.");
+    return;
+  }
+  if(/\b(open|show|go to|take me to)\b.*\b(tasks?|to[- ]?dos?)\b/.test(q)){
+    setView("tasks"); const reply="Opening your tasks.";
+    toast("Tasks",reply); if(voice)speakAssistant(reply); return;
+  }
+  if(/\b(open|show|go to|take me to)\b.*\b(people|contacts?)\b/.test(q)){
+    setView("people"); const reply="Opening your people.";
+    toast("People",reply); if(voice)speakAssistant(reply); return;
+  }
+  if(/\b(open|show|go to|take me to)\b.*\b(connect|connections|integrations?)\b/.test(q)){
+    setView("connect"); const reply="Opening connections.";
+    toast("Connections",reply); if(voice)speakAssistant(reply); return;
+  }
+  if(/\b(open|show|go to|take me to)\b.*\b(work|workstreams?)\b/.test(q)){
+    setView("work"); const reply="Opening work.";
+    toast("Work",reply); if(voice)speakAssistant(reply); return;
+  }
+  if(/\b(open|show|go to|take me to)\b.*\b(home|today|dashboard)\b/.test(q)){
+    setView("today"); const reply="Opening your executive dashboard.";
+    toast("Dashboard",reply); if(voice)speakAssistant(reply); return;
+  }
+  if(/\b(open|show|go to|take me to)\b.*\b(ask|assistant|ai)\b/.test(q)){
+    setView("ask"); const reply="Opening the AI assistant.";
+    toast("AI Assistant",reply); if(voice)speakAssistant(reply); return;
+  }
+  if(/\b(create|add|make)\b.*\btask\b/.test(q)){
+    const title=raw.replace(/.*?\b(?:create|add|make)\s+(?:a\s+)?task\s*(?:called|named|to)?\s*/i,"").trim();
+    if(title){
+      const due=null;
+      supabase.from("tasks").insert({user_id:state.user.id,title,status:"open",priority:"normal",owner_type:"you",due_at:due}).then(r=>{
+        if(r.error){toast("Could not create task",r.error.message);if(voice)speakAssistant("I couldn’t create that task.");return}
+        loadWorkspace().catch(()=>{});
+        toast("Task created",title);
+        if(voice)speakAssistant("Task created.");
+      });
+      return;
+    }
+  }
+  if(/\b(delegate|assign)\b/.test(q)){
+    const needle=raw.replace(/.*?\b(?:delegate|assign)\b/i,"").replace(/^\s+(?:the\s+)?task\s+/i,"").trim().toLowerCase();
+    const task=state.tasks.find(t=>needle&&String(t.title||"").toLowerCase().includes(needle));
+    if(task){
+      delegateTask(task.id);
+      if(voice)speakAssistant("I’ve delegated that task.");
+      return;
+    }
+    toast("Which task?","Say “delegate [task name]”.");
+    if(voice)speakAssistant("Tell me which task to delegate.");
+    return;
+  }
+  if(/\b(complete|finish|close|mark done)\b/.test(q)){
+    const needle=raw.replace(/.*?\b(?:complete|finish|close|mark done)\b/i,"").replace(/^\s+(?:the\s+)?task\s+/i,"").trim().toLowerCase();
+    const task=state.tasks.find(t=>needle&&String(t.title||"").toLowerCase().includes(needle));
+    if(task){
+      completeTask(task.id);
+      if(voice)speakAssistant("Task completed.");
+      return;
+    }
+    toast("Which task?","Say “complete [task name]”.");
+    if(voice)speakAssistant("Tell me which task to complete.");
+    return;
+  }
+  if(/\b(read|tell me|what(?:'s| is))\b.*\b(priority|priorities|attention|focus)\b/.test(q)){
+    const p=state.tasks.filter(t=>!["completed","done"].includes(t.status)).sort((a,b)=>priorityScore(b)-priorityScore(a)).slice(0,3);
+    const reply=p.length?"Your top priorities are: "+p.map((x,i)=>(i+1)+". "+x.title).join(", "):"Your attention queue is clear.";
+    $("#aiResult").classList.remove("hidden");$("#aiResult").innerHTML="<b>Your focus</b><p>"+escapeHtml(reply)+"</p>";
+    toast("Your focus",reply);if(voice)speakAssistant(reply);return;
+  }
+  if(/\b(next meeting|upcoming meeting|what do i have next)\b/.test(q)){
+    const future=state.events.filter(e=>new Date(e.starts_at)>new Date()).sort((a,b)=>new Date(a.starts_at)-new Date(b.starts_at))[0];
+    const reply=future?future.title+" at "+time(future.starts_at)+".":"You have no upcoming meeting in the loaded calendar.";
+    toast("Next meeting",reply);if(voice)speakAssistant(reply);return;
+  }
+  let title="MULTIWORK AI",msg="I can act on your workspace data now.";if(q.startsWith("remind me to ")||q.startsWith("remember to ")){
   const title=raw.replace(/^remind me to |^remember to /i,"").trim();
   if(!title){toast("Tell me what to remember","Say something like: remind me to call Daniel.");return}
   showModal("Create reminder task","I can add this to your executive queue.",'<div style="color:#aeb8c9;font-size:12px;line-height:1.7">MULTIWORK will save <b style="color:#fff">'+escapeHtml(title)+'</b> as an open task. You can add a due date before saving.</div><div class="field" style="margin-top:14px"><label>DUE DATE</label><input class="modalInput" id="voiceDue" type="datetime-local"></div>','Save reminder');
@@ -740,7 +924,7 @@ $("#connectContacts")?.addEventListener("click",connectGoogle);
 $("#connectGmail")?.addEventListener("click",connectGoogle);
 $("#icsImport")?.addEventListener("change",e=>{const f=e.target.files?.[0];if(f)importIcs(f).catch(err=>toast("Calendar import failed",err.message));e.target.value=""});
 $("#contactsImport")?.addEventListener("change",e=>{const f=e.target.files?.[0];if(f)importContactsCsv(f).catch(err=>toast("Contacts import failed",err.message));e.target.value=""});
-$("#voiceCommand")?.addEventListener("click",startVoiceCommand);
+$("#voiceCommand")?.addEventListener("click",()=>startVoiceCommand(false,true,true));
 $("#wakeWordToggle")?.addEventListener("click",toggleWakeWord);
 updateWakeButton();
 $("#bell")?.addEventListener("click",requestNotifications);
