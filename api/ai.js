@@ -5,7 +5,8 @@ export default async function handler(req,res){
   if(!token) return res.status(401).json({error:"Missing session token"});
 
   const supabaseUrl=process.env.SUPABASE_URL||"https://cjsiwwbqbmviucpezglt.supabase.co";
-  const supabaseKey=process.env.SUPABASE_PUBLISHABLE_KEY||"";
+  // Publishable keys are safe for browser-facing Supabase clients. Keep the env var preferred, with the project key as a resilience fallback so AI does not fail when Vercel env configuration is missing.
+  const supabaseKey=process.env.SUPABASE_PUBLISHABLE_KEY||"sb_publishable_lFUwGLc3b7qJ1U7rKomv1g_LKM7AQzp";
   if(!supabaseKey) return res.status(500).json({error:"SUPABASE_PUBLISHABLE_KEY is not configured"});
 
   const userRes=await fetch(supabaseUrl+"/auth/v1/user",{
