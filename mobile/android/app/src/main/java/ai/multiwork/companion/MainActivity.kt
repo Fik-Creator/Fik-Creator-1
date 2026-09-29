@@ -56,6 +56,7 @@ class MainActivity : ComponentActivity() {
             } else scheduleTestReminder()
         })
         root.addView(actionButton("Enable “Hi MULTIWORK” assistant") { startAssistant() })
+        root.addView(actionButton("Disable “Hi MULTIWORK” assistant") { stopAssistant() })
         root.addView(actionButton("Test reminder over any app") {
             if (!Settings.canDrawOverlays(this))
                 startActivity(Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:" + packageName)))
@@ -115,6 +116,11 @@ class MainActivity : ComponentActivity() {
         }
         ContextCompat.startForegroundService(this, Intent(this, WakeWordService::class.java))
         status.text = "Assistant active — listening for “Hi MULTIWORK”."
+    }
+
+    private fun stopAssistant() {
+        stopService(Intent(this, WakeWordService::class.java))
+        status.text = "Assistant stopped."
     }
 
     private fun showOverlayNow() {
