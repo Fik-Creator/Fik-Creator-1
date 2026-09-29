@@ -38,6 +38,11 @@ body:before{content:"";position:fixed;inset:0;pointer-events:none;background:rad
 .authTrust span:before{content:"✓";color:#4ade9b;margin-right:5px}
 .demoBtn{border:1px solid #2b466b;background:rgba(13,25,44,.7);color:#cfe4ff;border-radius:9px;padding:10px 14px;font-size:11px;font-weight:600;margin-top:12px}
 @media(max-width:760px){.pricingStrip{grid-template-columns:1fr}.priceCard.featured{order:-1}}
+.authSecurityNote{display:flex;gap:10px;align-items:flex-start;margin-top:16px;padding:12px 13px;border:1px solid #243654;background:#0b1422;border-radius:11px;color:#8fa1ba;font-size:10px;line-height:1.5}.authSecurityNote>span{color:#4ade9b;font-weight:800}.authSecurityNote b{display:block;color:#dce8fa;font-size:10px}.authSecurityNote small{display:block;color:#71819b;font-size:9px;margin-top:2px}
+.iconBtn{display:grid;place-items:center}.topIcon{width:17px;height:17px;display:block}.topIcon path,.topIcon rect,.topIcon circle,.topIcon line{stroke:currentColor;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.voiceIcon{width:16px;height:16px;display:block}.voiceIcon rect,.voiceIcon path{stroke:currentColor;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}.voiceBtn.listening{animation:voicePulse 1.25s ease-in-out infinite}.voiceBtn.listening .voiceIcon{transform:scale(1.05)}@keyframes voicePulse{0%,100%{box-shadow:0 0 0 0 rgba(83,202,255,0)}50%{box-shadow:0 0 0 5px rgba(83,202,255,.11)}}
+.permissionNote{display:flex;align-items:flex-start;gap:12px;margin:0 0 14px;padding:14px 15px;border:1px solid #294264;background:linear-gradient(145deg,#0b1422,#0d1728);border-radius:13px;color:#8092ac;font-size:10px;line-height:1.6}.permissionNote b{display:block;color:#e5efff;font-size:11px;margin-bottom:2px}.permissionIcon{width:34px;height:34px;border-radius:10px;display:grid;place-items:center;background:#11223a;color:#75d8ff;flex:none}.importTools{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 14px}.fileBtn{border:1px solid #29456b;background:#0e1a2c;color:#cfe1f7;border-radius:9px;padding:9px 12px;font-size:10px;font-weight:700;cursor:pointer}.fileBtn input{display:none}
+
 
 /* MULTIWORK AI brand refinement */
 .logo b{letter-spacing:.04em}.logo b::after{content:""}.mark{background:linear-gradient(135deg,#16b9ff,#3678ff 48%,#9a4dff)!important}.authBrand{background:radial-gradient(circle at 78% 18%,rgba(154,77,255,.14),transparent 25%),linear-gradient(145deg,#070b16,#0b1220)}.brandCopy h1 span,.brandCopy h1 em{background:linear-gradient(90deg,#ffffff 20%,#53caff 60%,#b86cff);-webkit-background-clip:text;background-clip:text;color:transparent}.authAction,.primaryBtn{background:linear-gradient(90deg,#16b9ff,#3678ff 48%,#9a4dff)!important}
@@ -76,8 +81,7 @@ body:before{content:"";position:fixed;inset:0;pointer-events:none;background:rad
       <div class="field"><label>PASSWORD</label><input id="authPassword" type="password" autocomplete="current-password" placeholder="••••••••" minlength="8" required></div>
       <div class="field hidden" id="nameField"><label>FULL NAME</label><input id="authName" type="text" autocomplete="name" placeholder="Your full name"></div>
       <button class="authAction" id="authSubmit" type="submit">Sign in</button>
-      <div class="authDivider"><span>or</span></div>
-      <button class="googleAuthBtn" id="googleAuthBtn" type="button"><span class="googleMark">G</span><span>Continue with Google</span></button>
+      <div class="authSecurityNote"><span>✓</span><div><b>Google is optional</b><small>Connect Google only when you choose to import calendar, contacts or email context.</small></div></div>
     </form>
     
     <div class="authSwitch">By continuing, you agree to use MULTIWORK AI responsibly and keep your account secure.</div>
@@ -94,12 +98,12 @@ body:before{content:"";position:fixed;inset:0;pointer-events:none;background:rad
 <button data-view="tasks"><span class="ico"><svg class="navIcon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="m8 12 2.6 2.7L16.5 9"/></svg></span><span>Tasks</span></button><button data-view="integrations"><span class="ico"><svg class="navIcon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v18M3 12h18"/><circle cx="12" cy="12" r="7.5"/></svg></span><span>Connect</span></button>
 </nav><div class="sideBottom"><div class="profile"><div class="avatar" id="sideAvatar">EA</div><div><b id="sideName" style="font-size:11px">Executive</b><small id="sideRole">Private workspace</small></div></div></div></aside>
 <main class="main">
-<header class="top"><div class="crumb">Workspace / <strong id="crumb">Today</strong></div><div class="topActions"><div class="datePill" id="datePill"></div><button class="circle" id="bell" aria-label="Notifications">⌁</button><button class="circle" id="logout" aria-label="Sign out">↗</button></div></header>
+<header class="top"><div class="crumb">Workspace / <strong id="crumb">Today</strong></div><div class="topActions"><div class="datePill" id="datePill"></div><button class="circle iconBtn" id="bell" aria-label="Notifications" title="Notifications"><svg class="topIcon" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 9a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"/><path d="M10 21h4"/></svg></button><button class="circle iconBtn" id="logout" aria-label="Sign out" title="Sign out"><svg class="topIcon" viewBox="0 0 24 24" aria-hidden="true"><path d="M14 7V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h7a2 2 0 0 0 2-2v-2"/><path d="M10 12h11M17 8l4 4-4 4"/></svg></button></div></header>
 <section class="content">
 
 <div class="view active" id="view-today">
 <div class="hero"><div><div class="eyebrow">Executive command center</div><h1 id="greeting">Good morning.<br>Here’s what matters.</h1><p id="heroSub">Your workspace is organized around what needs you.</p></div><div class="status"><span>System status</span><b><i class="dot"></i><span style="display:inline;color:#fff;text-transform:none;letter-spacing:0">Workspace secured</span></b></div></div>
-<div class="command"><span class="spark">✦</span><input id="command" placeholder="Ask MULTIWORK AI anything…" autocomplete="off"><button id="voiceCommand" class="ask voiceBtn" title="Voice command" aria-label="Start voice command">◉</button><button id="wakeWordToggle" class="wakeToggle" type="button" title="Enable wake word">Wake word off</button><button class="ask" id="ask">Ask MULTI</button></div>
+<div class="command" aria-label="MULTIWORK command center"><span class="spark">✦</span><input id="command" placeholder="Ask MULTIWORK AI anything…" autocomplete="off"><button id="voiceCommand" class="ask voiceBtn" title="Speak a command" aria-label="Speak a command"><svg class="voiceIcon" viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3M8.5 21h7"/></svg></button><button id="wakeWordToggle" class="wakeToggle" type="button" title="Listen for Hi MULTIWORK">Wake word off</button><button class="ask" id="ask">Ask MULTI</button></div>
 <div class="suggestions"><button class="suggestion" data-prompt="What requires my attention?">What requires my attention?</button><button class="suggestion" data-prompt="What do I have today?">What do I have today?</button><button class="suggestion" data-prompt="I'm overwhelmed">I’m overwhelmed</button></div>
 <div class="grid">
 <section class="panel"><div class="panelHead"><h2>Priority queue</h2><span id="priorityCount">Loading…</span></div><div class="priorities" id="priorityList"></div></section>
@@ -131,14 +135,19 @@ body:before{content:"";position:fixed;inset:0;pointer-events:none;background:rad
     </div>
   </div>
   <div class="integrationGrid">
-    <div class="integrationCard"><div><h3>Google Calendar</h3><p>Read your schedule and, when enabled, create or move events from MULTIWORK.</p><div class="integrationMeta"><i class="integrationDot" id="dotCalendar"></i><span id="statusCalendar">Not connected</span></div></div><button class="integrationBtn" data-connect="google" id="connectGoogle">Connect Google</button></div>
-    <div class="integrationCard"><div><h3>Google Contacts</h3><p>Bring important people, email addresses and phone numbers into your executive relationship layer.</p><div class="integrationMeta"><i class="integrationDot" id="dotContacts"></i><span id="statusContacts">Waiting for Google</span></div></div><button class="integrationBtn" data-connect="google" id="connectContacts">Connect Google</button></div>
-    <div class="integrationCard"><div><h3>Gmail</h3><p>Let MULTIWORK understand relevant email threads and prepare responses without exposing your credentials to the browser.</p><div class="integrationMeta"><i class="integrationDot" id="dotGmail"></i><span id="statusGmail">Waiting for Google</span></div></div><button class="integrationBtn" data-connect="google" id="connectGmail">Connect Google</button></div>
+    <div class="integrationCard"><div><h3>Google Calendar</h3><p>Read your schedule and, when enabled, create or move events from MULTIWORK.</p><div class="integrationMeta"><i class="integrationDot" id="dotCalendar"></i><span id="statusCalendar">Not connected</span></div></div><button class="integrationBtn" data-connect="google" id="connectGoogle">Connect Google data</button></div>
+    <div class="integrationCard"><div><h3>Google Contacts</h3><p>Bring important people, email addresses and phone numbers into your executive relationship layer.</p><div class="integrationMeta"><i class="integrationDot" id="dotContacts"></i><span id="statusContacts">Optional connection</span></div></div><button class="integrationBtn" data-connect="google" id="connectContacts">Connect Google data</button></div>
+    <div class="integrationCard"><div><h3>Gmail</h3><p>Let MULTIWORK understand relevant email threads and prepare responses without exposing your credentials to the browser.</p><div class="integrationMeta"><i class="integrationDot" id="dotGmail"></i><span id="statusGmail">Optional connection</span></div></div><button class="integrationBtn" data-connect="google" id="connectGmail">Connect Google data</button></div>
     <div class="integrationCard"><div><h3>Notes / Notepad</h3><p>Use MULTIWORK Notes immediately, with room for a future Google Keep connector. Notes stay inside your private workspace.</p><div class="integrationMeta"><i class="integrationDot on"></i><span>Available now</span></div></div><button class="integrationBtn connected" id="openNotes">Open notes</button></div>
     <div class="integrationCard"><div><h3>ChatGPT / OpenAI</h3><p>Use a server-side OpenAI connection to reason over your workspace context. API keys never belong in the browser.</p><div class="integrationMeta"><i class="integrationDot" id="dotAI"></i><span id="statusAI">Needs API key</span></div></div><button class="integrationBtn" id="testAI">Test AI</button></div>
     <div class="integrationCard"><div><h3>Phone call history</h3><p>Web browsers cannot read the phone's native call log. This is reserved for a future native Android companion with explicit device permission.</p><div class="integrationMeta"><i class="integrationDot"></i><span>Native companion required</span></div></div><button class="integrationBtn" disabled>Coming later</button></div>
   </div>
-  <div class="syncBar"><span id="syncStatus">Connect Google to import your calendar, contacts and email context.</span><button class="secondaryBtn" id="disconnectGoogle">Disconnect Google</button></div>
+  <div class="permissionNote"><div class="permissionIcon"><svg class="topIcon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 4 6v6c0 5 3.4 8 8 9 4.6-1 8-4 8-9V6z"/><path d="m9 12 2 2 4-4"/></svg></div><div><b>Connections are separate from sign-in.</b><span>MULTIWORK never needs Google to create your MULTIWORK account. Choosing Connect opens the provider's permission screen, and you can disconnect later.</span></div></div>
+  <div class="importTools">
+    <label class="fileBtn"><input id="icsImport" type="file" accept=".ics,text/calendar">Import calendar (.ics)</label>
+    <label class="fileBtn"><input id="contactsImport" type="file" accept=".csv,text/csv">Import contacts (.csv)</label>
+  </div>
+  <div class="syncBar"><span id="syncStatus">Connect a source or import a file to add context.</span><button class="secondaryBtn" id="disconnectGoogle">Disconnect Google data</button></div>
 </div>
 
 </section></main></div></section>
@@ -211,6 +220,19 @@ window.addEventListener("error",e=>{
 window.addEventListener("unhandledrejection",e=>{
   console.error("MULTIWORK unhandled rejection:",e.reason);
 });
+function consumeVoiceIntent(){
+  const url=new URL(window.location.href);const incoming=url.searchParams.get("voice");
+  const pending=sessionStorage.getItem("multiwork_pending_voice")||"";
+  const voice=incoming||pending;
+  if(!voice)return;
+  if(incoming)url.searchParams.delete("voice");
+  history.replaceState({},document.title,url.pathname+url.search+url.hash);
+  sessionStorage.removeItem("multiwork_pending_voice");
+  if(!state.user){sessionStorage.setItem("multiwork_pending_voice",voice);return}
+  setView("today");
+  if(voice==="__WAKE__")startVoiceCommand(true);
+  else {$("#command").value=voice;commandAnswer(voice,"command",{voice:true});}
+}
 async function initAuth(){
   // Never block the executive shell on network/database hydration.
   showAuth("signin");
@@ -239,6 +261,7 @@ supabase.auth.onAuthStateChange((event,session)=>{
     if(event==="SIGNED_IN"&&session?.user){
       state.user={id:session.user.id,email:session.user.email||"",name:session.user.user_metadata?.full_name||session.user.email?.split("@")[0]||"Executive"};
       showApp();renderAll();
+      consumeVoiceIntent();
       loadWorkspace().catch(err=>console.error("Auth state workspace load:",err));
     }
     if(event==="SIGNED_OUT"){
@@ -259,74 +282,105 @@ function speakAssistant(text){
   if(!("speechSynthesis" in window)||!text)return;
   try{window.speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(String(text).slice(0,1200));u.lang="en-NG";u.rate=.96;u.pitch=1;window.speechSynthesis.speak(u)}catch{}
 }
-function getSpeechRecognition(){
-  return window.SpeechRecognition||window.webkitSpeechRecognition||null;
+function getSpeechRecognition(){return window.SpeechRecognition||window.webkitSpeechRecognition||null}
+function setVoiceButton(active){
+  const b=$("#voiceCommand"); if(!b)return;
+  b.classList.toggle("listening",!!active);
+  b.setAttribute("aria-label",active?"Listening for your command":"Speak a command");
+  b.title=active?"Listening for your command":"Speak a command";
 }
 function updateWakeButton(){
   const b=$("#wakeWordToggle"); if(!b)return;
   b.textContent=state.wakeListening?"Listening for “Hi MULTIWORK”":(state.wakeEnabled?"Wake word on":"Wake word off");
   b.classList.toggle("active",state.wakeEnabled||state.wakeListening);
 }
-function openVoiceAssistant(){
-  stopWakeWord();
-  const input=$("#command"); input?.focus(); $("#voiceCommand")?.click();
+function stopWakeWord(keepEnabled=false){
+  const r=window.__wakeRecognition;
+  window.__wakeRecognition=null;
+  state.wakeListening=false;
+  if(!keepEnabled)state.wakeEnabled=false;
+  updateWakeButton();
+  if(r)try{r.abort()}catch{}
 }
-function stopWakeWord(){
-  if(window.__wakeRecognition){try{window.__wakeRecognition.abort()}catch{}}
-  window.__wakeRecognition=null; state.wakeListening=false; updateWakeButton();
+function openVoiceAssistant(){
+  stopWakeWord(true);
+  startVoiceCommand(true);
 }
 function startWakeWord(){
   const SpeechRecognition=getSpeechRecognition();
-  if(!SpeechRecognition){toast("Wake word unavailable","This browser does not support continuous speech recognition. Use the MULTIWORK mobile companion for deeper background listening.");return}
-  if(state.wakeListening)return;
-  state.wakeEnabled=true; localStorage.setItem("multiwork_wake_word","1");
+  if(!SpeechRecognition){toast("Wake word unavailable","This browser does not support background-style speech recognition. The Android companion provides deeper device-level control.");return}
+  if(state.wakeListening||state.voiceListening)return;
+  state.wakeEnabled=true;
+  localStorage.setItem("multiwork_wake_word","1");
   const r=new SpeechRecognition();
-  r.lang="en-NG"; r.continuous=true; r.interimResults=true; r.maxAlternatives=1;
-  window.__wakeRecognition=r; state.wakeListening=true; updateWakeButton();
+  r.lang="en-NG";r.continuous=true;r.interimResults=true;r.maxAlternatives=1;
+  window.__wakeRecognition=r;state.wakeListening=true;updateWakeButton();
   r.onresult=e=>{
     let heard="";
-    for(let i=e.resultIndex;i<e.results.length;i++) heard+=(e.results[i][0]?.transcript||"")+" ";
+    for(let i=e.resultIndex;i<e.results.length;i++)heard+=(e.results[i][0]?.transcript||"")+" ";
     heard=heard.trim();
-    if(/\bhi\s+multiwork\b/i.test(heard)){
-      const command=heard.replace(/\bhi\s+multiwork\b[\s,.:;-]*/i,"").trim();
-      toast("MULTIWORK activated","I'm listening.");
-      if(command){$("#command").value=command;commandAnswer(command,"command",{voice:true});}
-      else openVoiceAssistant();
+    const match=heard.match(/\bhi\s+multiwork\b([\s,.:;-]*)(.*)$/i);
+    if(!match)return;
+    const command=(match[2]||"").trim();
+    stopWakeWord(true);
+    toast("MULTIWORK activated",command?"Processing your command.":"I'm listening for your command.");
+    if(command){
+      $("#command").value=command;
+      commandAnswer(command,"command",{voice:true});
+      speakAssistant("Got it.");
+    }else{
+      speakAssistant("Yes?");
+      setTimeout(()=>startVoiceCommand(true),500);
     }
   };
   r.onerror=e=>{
-    if(e.error==="not-allowed"){state.wakeEnabled=false;localStorage.removeItem("multiwork_wake_word");toast("Microphone permission needed","Allow microphone access to use the wake word.");}
+    if(e.error==="not-allowed"){
+      state.wakeEnabled=false;localStorage.removeItem("multiwork_wake_word");
+      stopWakeWord(false);
+      toast("Microphone permission needed","Allow microphone access to use the wake word.");
+    }
   };
   r.onend=()=>{
+    if(window.__wakeRecognition!==r)return;
     window.__wakeRecognition=null;state.wakeListening=false;updateWakeButton();
-    if(state.wakeEnabled&&!document.hidden){setTimeout(startWakeWord,700)}
+    if(state.wakeEnabled&&!state.voiceListening&&!document.hidden)setTimeout(startWakeWord,650);
   };
-  try{r.start()}catch{state.wakeListening=false;updateWakeButton()}
+  try{r.start()}catch{window.__wakeRecognition=null;state.wakeListening=false;updateWakeButton()}
 }
 function toggleWakeWord(){
-  if(state.wakeListening||state.wakeEnabled){state.wakeEnabled=false;localStorage.removeItem("multiwork_wake_word");stopWakeWord();toast("Wake word off","Say “Hi MULTIWORK” again after turning it back on.");}
-  else {startWakeWord();toast("Wake word on","Keep MULTIWORK open and say “Hi MULTIWORK”.");}
+  if(state.wakeListening||state.wakeEnabled){
+    stopWakeWord(false);
+    localStorage.removeItem("multiwork_wake_word");
+    toast("Wake word off","MULTIWORK will stop listening for “Hi MULTIWORK”.");
+  }else{
+    startWakeWord();
+    toast("Wake word on","Say “Hi MULTIWORK” and MULTIWORK will automatically start listening for the command that follows.");
+  }
 }
-
-function startVoiceCommand(){
+function startVoiceCommand(fromWake=false){
   const SpeechRecognition=getSpeechRecognition();
-  if(!SpeechRecognition){toast("Voice unavailable","Speech recognition is not available in this browser. MULTIWORK Mobile will provide deeper device-level voice controls.");return}
+  if(!SpeechRecognition){toast("Voice unavailable","Speech recognition is not available in this browser. Use the Android companion for deeper device-level voice controls.");return}
   if(state.voiceListening)return;
+  stopWakeWord(true);
   const recognition=new SpeechRecognition();
   recognition.lang="en-NG";recognition.interimResults=false;recognition.continuous=false;recognition.maxAlternatives=1;
-  const btn=$("#voiceCommand");state.voiceListening=true;btn?.classList.add("listening");if(btn)btn.textContent="●";
-  recognition.onstart=()=>toast("MULTIWORK is listening","Tell me a task, question, or command.");
+  const btn=$("#voiceCommand");state.voiceListening=true;setVoiceButton(true);
+  recognition.onstart=()=>toast("MULTIWORK is listening",fromWake?"Say your command now.":"Tell me a task, question, or command.");
   recognition.onresult=e=>{
     const spoken=e.results?.[0]?.[0]?.transcript?.trim()||"";
     if(!spoken){toast("I didn't catch that","Try speaking again.");return}
-    $("#command").value=spoken;commandAnswer(spoken,"command",{voice:true});
+    $("#command").value=spoken;
+    commandAnswer(spoken,"command",{voice:true});
   };
-  recognition.onerror=e=>toast("Voice stopped",e.error==="not-allowed"?"Microphone permission was denied.":(e.error||"Speech recognition failed"));
+  recognition.onerror=e=>{
+    state.voiceListening=false;setVoiceButton(false);
+    toast("Voice stopped",e.error==="not-allowed"?"Microphone permission was denied.":(e.error||"Speech recognition failed"));
+  };
   recognition.onend=()=>{
-  state.voiceListening=false;btn?.classList.remove("listening");if(btn)btn.textContent="◉";
-  if(state.wakeEnabled&&!document.hidden) setTimeout(startWakeWord,700);
-};
-  try{recognition.start()}catch(err){state.voiceListening=false;btn?.classList.remove("listening");if(btn)btn.textContent="◉";toast("Voice unavailable",err.message)}
+    state.voiceListening=false;setVoiceButton(false);
+    if(state.wakeEnabled&&!document.hidden)setTimeout(startWakeWord,650);
+  };
+  try{recognition.start()}catch(err){state.voiceListening=false;setVoiceButton(false);toast("Voice unavailable",err.message)}
 }
 async function requestNotifications(){
   if(!("Notification" in window)){toast("Notifications unavailable","Your browser does not support notifications.");return}
@@ -335,31 +389,20 @@ async function requestNotifications(){
 }
 
 async function connectGoogle(){
-  if(!state.user){await signInWithGoogle();return}
-  const {data,error}=await supabase.auth.linkIdentity({provider:"google",options:{scopes:GOOGLE_SCOPES,queryParams:{access_type:"offline",prompt:"consent"}}});
-  if(error){toast("Google connection needs setup",error.message);return}
-  if(data?.url) window.location.href=data.url;
-}
-async function signInWithGoogle(){
-  try{
-    const {data,error}=await supabase.auth.signInWithOAuth({
-      provider:"google",
-      options:{
-        scopes:"openid email profile",
-        queryParams:{access_type:"offline",prompt:"select_account"},
-        redirectTo:window.location.origin+window.location.pathname
-      }
-    });
-    if(error)throw error;
-    if(data?.url)window.location.href=data.url;
-  }catch(error){
-    const msg=String(error?.message||"Google sign-in failed");
-    if(/unsupported provider|provider.*not enabled/i.test(msg)){
-      toast("Google sign-in not enabled","Enable Google under Supabase Authentication → Providers, then add the Google Client ID and Secret.");
-    }else{
-      toast("Google sign-in failed",msg);
+  if(!state.user){toast("Sign in first","Google is an optional data connection, not a MULTIWORK sign-in method.");return}
+  showModal("Connect Google data","MULTIWORK will open Google's permission screen. Your MULTIWORK account stays separate.","<div style='color:#aeb8c9;font-size:12px;line-height:1.7'><p style='margin-top:0'><b style='color:#fff'>Requested access</b></p><div style='display:grid;gap:8px'><span>• Calendar: read upcoming events</span><span>• Contacts: read saved people</span><span>• Gmail: read message metadata for context</span></div><p style='margin-bottom:0;color:#7587a2'>You choose the permission in Google. MULTIWORK can be disconnected later.</p></div>","Continue to Google");
+  $("#modalPrimary").onclick=async()=>{
+    $("#modal").classList.remove("open");
+    try{
+      const {data,error}=await supabase.auth.linkIdentity({provider:"google",options:{scopes:GOOGLE_SCOPES,queryParams:{access_type:"offline",prompt:"consent"},redirectTo:window.location.origin+window.location.pathname}});
+      if(error)throw error;
+      if(data?.url)window.location.href=data.url;
+    }catch(error){
+      const msg=String(error?.message||"Google connection failed");
+      if(/unsupported provider|provider.*not enabled/i.test(msg))toast("Google connector not configured","MULTIWORK sign-in is unaffected. Enable the Google provider later to activate the optional permission flow.");
+      else toast("Google connection failed",msg);
     }
-  }
+  };
 }
 async function upsertIntegration(provider,status,capabilities,metadata={}){
   if(!state.user)return;
@@ -414,6 +457,33 @@ async function syncGoogle(){
     console.error(err);toast("Google sync failed",err.message);
     await upsertIntegration("google","error",[],{});
   }
+}
+function parseIcsDate(v){if(!v)return null;const raw=v.replace(/^.*:/,"").trim();if(/^\\d{8}T\\d{6}Z$/.test(raw)){return new Date(Date.UTC(+raw.slice(0,4),+raw.slice(4,6)-1,+raw.slice(6,8),+raw.slice(9,11),+raw.slice(11,13),+raw.slice(13,15))).toISOString()}if(/^\\d{8}T\\d{6}$/.test(raw)){const d=new Date(+raw.slice(0,4),+raw.slice(4,6)-1,+raw.slice(6,8),+raw.slice(9,11),+raw.slice(11,13),+raw.slice(13,15));return d.toISOString()}if(/^\\d{8}$/.test(raw))return new Date(+raw.slice(0,4),+raw.slice(4,6)-1,+raw.slice(6,8)).toISOString();return null}
+async function importIcs(file){
+  if(!state.user||!file)return;
+  const text=await file.text();const unfolded=text.replace(/\\r?\\n[ \\t]/g,"");
+  const blocks=unfolded.split(/BEGIN:VEVENT/i).slice(1);let count=0;
+  for(const block of blocks){
+    const end=block.split(/END:VEVENT/i)[0];
+    const pick=k=>{const re=new RegExp("^"+k+"(?:;[^:]*)?:(.*)$","mi");return end.match(re)?.[1]?.trim()||""};
+    const start=parseIcsDate(pick("DTSTART")),finish=parseIcsDate(pick("DTEND"));const title=pick("SUMMARY")||"Imported event";if(!start)continue;
+    const externalId="ics_"+btoa(unescape(encodeURIComponent([title,start,pick("LOCATION")].join("|")))).replace(/[^a-z0-9]/gi,"").slice(0,50);
+    await supabase.from("events").upsert({user_id:state.user.id,title,starts_at:start,ends_at:finish,location:pick("LOCATION")||null,status:"scheduled",source_provider:"ics",source_external_id:externalId},{onConflict:"user_id,source_provider,source_external_id"});
+    count++;
+  }
+  await loadWorkspace();toast("Calendar imported",count+" event"+(count===1?"":"s")+" added from "+file.name+".");$("#syncStatus").textContent="Imported calendar from "+file.name+".";
+}
+function splitCsv(line){const out=[];let cur="",quoted=false;for(let i=0;i<line.length;i++){const c=line[i];if(c==='"'){if(quoted&&line[i+1]==='"'){cur+='"';i++;}else quoted=!quoted}else if(c===','&&!quoted){out.push(cur.trim());cur=""}else cur+=c}out.push(cur.trim());return out}
+async function importContactsCsv(file){
+  if(!state.user||!file)return;
+  const text=await file.text();const lines=text.split(/\\r?\\n/).filter(Boolean);if(lines.length<2){toast("Contacts import","CSV needs a header row and at least one contact.");return}
+  const headers=splitCsv(lines[0]).map(x=>x.toLowerCase());let count=0;
+  for(const line of lines.slice(1)){
+    const vals=splitCsv(line);const row=Object.fromEntries(headers.map((h,i)=>[h,vals[i]||""]));const name=row.name||row.full_name||row.fullname||"";if(!name)continue;
+    const email=row.email||row.email_address||null,phone=row.phone||row.phone_number||null,company=row.company||row.organization||null,role=row.role||row.title||null;
+    await supabase.from("contacts").insert({user_id:state.user.id,full_name:name,email,phone,company,role,notes:row.notes||null});count++;
+  }
+  await loadWorkspace();toast("Contacts imported",count+" contact"+(count===1?"":"s")+" added from "+file.name+".");$("#syncStatus").textContent="Imported contacts from "+file.name+".";
 }
 function updateIntegrationUI(){
   const connected=!!state.googleToken||state.googleConnected||state.integrations.some(x=>x.provider==="google"&&x.status==="connected");
@@ -656,7 +726,8 @@ $("#ask")?.addEventListener("click",()=>commandAnswer($("#command").value,"comma
 $("#connectGoogle")?.addEventListener("click",connectGoogle);
 $("#connectContacts")?.addEventListener("click",connectGoogle);
 $("#connectGmail")?.addEventListener("click",connectGoogle);
-$("#googleAuthBtn")?.addEventListener("click",signInWithGoogle);
+$("#icsImport")?.addEventListener("change",e=>{const f=e.target.files?.[0];if(f)importIcs(f).catch(err=>toast("Calendar import failed",err.message));e.target.value=""});
+$("#contactsImport")?.addEventListener("change",e=>{const f=e.target.files?.[0];if(f)importContactsCsv(f).catch(err=>toast("Contacts import failed",err.message));e.target.value=""});
 $("#voiceCommand")?.addEventListener("click",startVoiceCommand);
 $("#wakeWordToggle")?.addEventListener("click",toggleWakeWord);
 updateWakeButton();
