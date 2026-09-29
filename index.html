@@ -606,7 +606,8 @@ async function googleFetch(url,options={}){
   if(!res.ok) throw new Error("Google API returned "+res.status);
   return res.json();
 }
-async function syncGoogle(options={}){\n  const silent=!!options.silent;
+async function syncGoogle(options={}){
+  const silent=!!options.silent;
   if(!googleConnected()){if(!silent)requestCapability("google","sync my Google data");return false}
   if(!state.googleToken){if(!silent)toast("Google connection needs refresh","Reconnect Google so MULTIWORK can access the live data.");if(!silent)requestCapability("google","sync my Google data");return false}
   const uid=state.user.id;
@@ -643,7 +644,8 @@ async function syncGoogle(options={}){\n  const silent=!!options.silent;
     await upsertIntegration("google","connected",["calendar","contacts","email"],{email:state.user.email});
     await loadWorkspace();
     toast("Google synced",eventCount+" calendar events · "+personCount+" contacts · "+mailCount+" emails imported.");
-    $("#syncStatus").textContent="Last synced just now.";\n    return true;
+    $("#syncStatus").textContent="Last synced just now.";
+    return true;
   }catch(err){
     console.error(err);toast("Google sync failed",err.message);
     await upsertIntegration("google","error",[],{});
