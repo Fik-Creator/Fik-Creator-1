@@ -4,7 +4,7 @@
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>MULTIWORK AI — Your work. Smarter.</title><meta name="theme-color" content="#080d17"><link rel="icon" type="image/svg+xml" href="assets/multiwork-mark.svg">
 <meta name="description" content="MULTIWORK AI — an intelligent command center for your work, priorities, people and schedule.">
-<meta name="color-scheme" content="dark"><meta name="multiwork-build" content="2026-09-29-contextual-permissions-v3">
+<meta name="color-scheme" content="dark"><meta name="multiwork-build" content="2026-09-29-colleague-voice-v1">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
 <style>
@@ -167,7 +167,7 @@ const $=s=>document.querySelector(s);
 const qsa=s=>document.querySelectorAll(s);
 
 // No startup overlay: the executive shell renders immediately; data hydrates in the background.
-const state={user:null,profile:null,tasks:[],events:[],contacts:[],external:[],notes:[],integrations:[],googleToken:null,googleRefreshToken:null,googleConnected:false,voiceListening:false,wakeListening:false,wakeEnabled:localStorage.getItem("multiwork_wake_word")==="1",voiceSession:false,voiceStopping:false,voiceIgnoreUntil:0,view:"today"};
+const state={user:null,profile:null,tasks:[],events:[],contacts:[],external:[],notes:[],integrations:[],googleToken:null,googleRefreshToken:null,googleConnected:false,voiceListening:false,wakeListening:false,wakeEnabled:localStorage.getItem("multiwork_wake_word")==="1",voiceSession:false,voiceStopping:false,voiceIgnoreUntil:0,dialogue:null,pendingDraft:null,conversationHistory:[],view:"today"};
 
 function toast(title,msg){const t=$("#toast");t.innerHTML="<b>"+escapeHtml(title)+"</b>"+escapeHtml(msg);t.classList.add("show");clearTimeout(window.__toast);window.__toast=setTimeout(()=>t.classList.remove("show"),3800)}
 function escapeHtml(v){return String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[c]))}
@@ -338,20 +338,133 @@ function stopWakeWord(keepEnabled=false){
 function stripWakePrefix(text){
   return String(text||"").replace(/^\s*(?:hey\s+)?multiwork\b[\s,.:;-]*/i,"").trim();
 }
+function detectVoiceTone(text){
+  const s=String(text||"").toLowerCase();
+  if(/\b(urgent|asap|immediately|right now|emergency|hurry|quickly)\b/.test(s))return "urgent";
+  if(/\b(frustrated|annoyed|angry|fed up|tired|stressed|this is not working|why is this)\b/.test(s))return "frustrated";
+  if(/\b(thanks|thank you|great|perfect|awesome|excellent|love it)\b/.test(s))return "positive";
+  if(/\b(please|could you|when you can|no rush)\b/.test(s))return "calm";
+  return "neutral";
+}
+function findContact(query){
+  const q=String(query||"").trim().toLowerCase();
+  if(!q)return null;
+  return state.contacts.find(c=>{
+    const name=String(c.full_name||"").toLowerCase();
+    const phone=String(c.phone||"").toLowerCase();
+    const email=String(c.email||"").toLowerCase();
+    return name===q||name.includes(q)||phone===q||email===q;
+  })||null;
+}
+function extractPersonVerb(raw){
+  const m=String(raw||"").match(/^\s*(?:call|phone|ring|text|message|sms|write to|send a text to)\s+(.+?)(?:\s+about\s+(.+))?$/i);
+  return m?{person:(m[1]||"").trim(),topic:(m[2]||"").trim()}:null;
+}
+function speakColleague(text,tone="neutral"){
+  const prefix=tone==="frustrated"&&!/^i understand|^understood|^okay/i.test(String(text))
+    ?"Understood. ":"";
+  speakAssistant(prefix+String(text||""));
+}
+function openDialer(number,name){
+  const clean=String(number||"").trim();
+  if(!clean){toast("No phone number","I need a phone number for "+(name||"that person")+".");return}
+  showModal("Call "+(name||"contact"),"MULTIWORK is ready to hand this call to your phone.",'<div style="color:#aeb8c9;font-size:14px;line-height:1.7"><b style="color:#fff">'+escapeHtml(name||"Contact")+'</b><br>'+escapeHtml(clean)+'<p style="color:#7587a2;font-size:11px;margin-bottom:0">Your phone or calling app will open. You stay in control of the call.</p></div>','Call now');
+  $("#modalPrimary").onclick=()=>{
+    $("#modal").classList.remove("open");
+    window.location.href="tel:"+encodeURIComponent(clean);
+  };
+}
+async function createMessageDraft(contact,topic,tone="neutral"){
+  const {data:{session}}=await supabase.auth.getSession();
+  if(!session){toast("Sign in required","Your workspace session is missing.");return}
+  const toneRule=tone==="urgent"?"Make it concise and action-oriented.":tone==="frustrated"?"Make it calm, respectful and solution-focused.":tone==="positive"?"Make it warm and appreciative.":"Make it polished, natural and professional.";
+  try{
+    const res=await fetch("/api/ai",{method:"POST",headers:{"Content-Type":"application/json",Authorization:"Bearer "+session.access_token},body:JSON.stringify({
+      message:"Draft a professional text message to "+contact.full_name+" about: "+topic+". "+toneRule+" Return only the message body.",
+      context:{profile:state.profile,contact:{name:contact.full_name,role:contact.role,company:contact.company},conversation:state.conversationHistory.slice(-8),voiceTone:tone}
+    })});
+    const data=await res.json();
+    if(!res.ok)throw new Error(data.error||"Could not draft the message.");
+    const draft=String(data.output||"").trim();
+    state.pendingDraft={type:"sms",contact,body:draft};
+    state.dialogue={type:"message_draft"};
+    showModal("Message draft","Review or refine it before opening your messaging app.",'<div class="field"><label>TO</label><input class="modalInput" id="draftTo" value="'+escapeHtml(contact.full_name||"")+'" disabled></div><div class="field"><label>MESSAGE</label><textarea class="modalInput" id="draftBody" style="min-height:150px;resize:vertical">'+escapeHtml(draft)+'</textarea></div><div style="color:#7587a2;font-size:10px;line-height:1.5">MULTIWORK will open the messaging composer with this text. It will not send it without your action.</div>','Open messages');
+    $("#modalPrimary").onclick=()=>{
+      const body=$("#draftBody").value.trim();
+      if(!body){toast("Empty message","Add something before opening messages.");return}
+      if(!contact.phone){toast("No phone number","Add a phone number for "+contact.full_name+" first.");return}
+      state.pendingDraft={type:"sms",contact,body};
+      state.dialogue=null;
+      $("#modal").classList.remove("open");
+      window.location.href="sms:"+encodeURIComponent(contact.phone)+"?body="+encodeURIComponent(body);
+    };
+  }catch(err){
+    toast("Draft failed",err.message);
+    speakColleague("I couldn’t draft that yet. Tell me exactly what you want the message to say.",tone);
+  }
+}
+async function handleDialogue(raw,tone){
+  if(!state.dialogue)return false;
+  const text=String(raw||"").trim();
+  const lower=text.toLowerCase();
+  const d=state.dialogue;
+  if(d.type==="call"){
+    const c=findContact(text);
+    if(c){
+      state.dialogue=null;
+      if(c.phone)openDialer(c.phone,c.full_name);
+      else speakColleague("I found "+c.full_name+", but there is no phone number saved for them.",tone);
+      return true;
+    }
+    const phone=text.match(/[+]?[0-9][0-9\s().-]{7,}/)?.[0];
+    if(phone){state.dialogue=null;openDialer(phone,d.name||"contact");return true}
+    speakColleague("Who should I call?",tone);return true;
+  }
+  if(d.type==="message"){
+    if(!d.contact){
+      const c=findContact(text);
+      if(!c){speakColleague("Which person should I message?",tone);return true}
+      state.dialogue={type:"message",contact:c};
+      speakColleague("What should I say to "+c.full_name+"?",tone);
+      return true;
+    }
+    const c=d.contact;
+    state.dialogue=null;
+    await createMessageDraft(c,text,tone);
+    return true;
+  }
+  if(d.type==="message_draft"&&state.pendingDraft){
+    if(/^(send it|open messages|send the message)$/i.test(lower)){
+      const {contact,body}=state.pendingDraft;
+      if(!contact.phone){speakColleague("I still need a phone number for "+contact.full_name+".",tone);return true}
+      state.dialogue=null;
+      window.location.href="sms:"+encodeURIComponent(contact.phone)+"?body="+encodeURIComponent(body);
+      return true;
+    }
+    if(/\b(make it|rewrite|change|more formal|more casual|shorter|longer)\b/i.test(lower)){
+      const {contact}=state.pendingDraft;
+      state.dialogue=null;
+      await createMessageDraft(contact,text,tone);
+      return true;
+    }
+  }
+  return false;
+}
 function voiceHandleUtterance(raw){
   const spoken=stripWakePrefix(raw);
   if(!spoken||Date.now()<state.voiceIgnoreUntil)return;
+  const tone=detectVoiceTone(spoken);
+  state.conversationHistory.push({speaker:"user",text:spoken,tone,at:new Date().toISOString()});
+  if(state.conversationHistory.length>20)state.conversationHistory.shift();
   if(/^(stop|stop listening|stop voice|cancel assistant|go quiet|be quiet)$/i.test(spoken)){
     speakAssistant("Okay. I’m stopping voice listening.",()=>stopVoiceCommand(true));
     return;
   }
-  if(/^(start listening|listen|resume listening|wake up)$/i.test(spoken)){
-    state.voiceSession=true;
-    startVoiceCommand(false,true,true);
-    return;
-  }
-  $("#command").value=spoken;
-  commandAnswer(spoken,"command",{voice:true,voiceSession:state.voiceSession});
+  handleDialogue(spoken,tone).then(done=>{
+    if(done)return;
+    $("#command").value=spoken;
+    commandAnswer(spoken,"command",{voice:true,voiceSession:state.voiceSession,voiceTone:tone});
+  }).catch(()=>commandAnswer(spoken,"command",{voice:true,voiceSession:state.voiceSession,voiceTone:tone}));
 }
 function startVoiceCommand(fromWake=false,announce=true,session=true){
   const SpeechRecognition=getSpeechRecognition();
@@ -879,13 +992,16 @@ async function askAI(raw,target,options={}){
   try{
     const res=await fetch("/api/ai",{method:"POST",headers:{"Content-Type":"application/json",Authorization:"Bearer "+session.access_token},body:JSON.stringify({
       message:raw,
-      context:{profile:state.profile,tasks:state.tasks.slice(0,50),events:state.events.slice(0,50),contacts:state.contacts.slice(0,50),external:state.external.slice(0,120),notes:state.notes.slice(0,20)}
+      context:{profile:state.profile,tasks:state.tasks.slice(0,50),events:state.events.slice(0,50),contacts:state.contacts.slice(0,50),external:state.external.slice(0,120),notes:state.notes.slice(0,20),conversation:{history:state.conversationHistory.slice(-10),tone:options?.voiceTone||"neutral",pending:state.dialogue||null}}
     })});
     const data=await res.json();
     if(!res.ok)throw new Error(data.error||"AI endpoint unavailable");
     window.__multiworkAIReady=true;updateIntegrationUI();
-    box.innerHTML="<b>MULTIWORK AI</b><p>"+escapeHtml(data.output||"No response generated.")+"</p>";
-    if(target==="voice"||options?.voice) speakAssistant(data.output||"");
+    const output=String(data.output||"No response generated.").trim();
+    box.innerHTML="<b>MULTIWORK AI</b><p>"+escapeHtml(output)+"</p>";
+    state.conversationHistory.push({speaker:"assistant",text:output,at:new Date().toISOString()});
+    if(state.conversationHistory.length>20)state.conversationHistory.shift();
+    if(target==="voice"||options?.voice) speakColleague(output,options?.voiceTone||"neutral");
     if(target==="command")toast("MULTIWORK AI","I used your connected workspace context.");
   }catch(err){
     box.innerHTML="<b>AI connection needed</b><p>"+escapeHtml(err.message)+"</p>";
@@ -925,6 +1041,32 @@ async function commandAnswer(raw,target,options={}){
     return;
   }
 
+  const tone=options?.voiceTone||detectVoiceTone(raw);
+  if(/\b(call|phone|ring)\b/.test(q)){
+    const parsed=extractPersonVerb(raw);
+    const person=(parsed?.person||"").trim();
+    if(!person){state.dialogue={type:"call",name:""};speakColleague("Who should I call?",tone);return}
+    const c=findContact(person);
+    if(c){if(c.phone)openDialer(c.phone,c.full_name);else speakColleague("I found "+c.full_name+", but there is no phone number saved. What number should I use?",tone);return}
+    if(/[+]?[0-9][0-9\s().-]{7,}/.test(person)){openDialer(person,"that number");return}
+    state.dialogue={type:"call",name:person};
+    speakColleague("I couldn’t find "+person+" in your saved contacts. Which one do you mean?",tone);
+    return;
+  }
+  if(/\b(text|message|sms|write to|send a text)\b/.test(q)){
+    const parsed=extractPersonVerb(raw);
+    const person=(parsed?.person||"").trim();
+    const topic=(parsed?.topic||"").trim();
+    if(!person){state.dialogue={type:"message",contact:null};speakColleague("Who should I message?",tone);return}
+    const c=findContact(person);
+    if(!c){state.dialogue={type:"message",contact:null};speakColleague("Which "+person+" do you mean?",tone);return}
+    if(!topic){state.dialogue={type:"message",contact:c};speakColleague("What should I say to "+c.full_name+"?",tone);return}
+    await createMessageDraft(c,topic,tone);
+    return;
+  }
+  if(/^(send it|open messages|send the message)$/i.test(raw)&&state.pendingDraft){
+    const done=await handleDialogue(raw,tone);if(done)return;
+  }
   if(/\b(stop|disable|turn off)\b.*\b(wake word|wake listening|hi multiwork)\b/.test(q)){
     if(state.wakeListening||state.wakeEnabled){stopWakeWord(false);localStorage.removeItem("multiwork_wake_word");}
     if(voice)speakAssistant("Wake word is off.");
