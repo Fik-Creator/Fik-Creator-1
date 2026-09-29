@@ -41,6 +41,7 @@ body:before{content:"";position:fixed;inset:0;pointer-events:none;background:rad
 .authSecurityNote{display:flex;gap:10px;align-items:flex-start;margin-top:16px;padding:12px 13px;border:1px solid #243654;background:#0b1422;border-radius:11px;color:#8fa1ba;font-size:10px;line-height:1.5}.authSecurityNote>span{color:#4ade9b;font-weight:800}.authSecurityNote b{display:block;color:#dce8fa;font-size:10px}.authSecurityNote small{display:block;color:#71819b;font-size:9px;margin-top:2px}
 .iconBtn{display:grid;place-items:center}.topIcon{width:17px;height:17px;display:block}.topIcon path,.topIcon rect,.topIcon circle,.topIcon line{stroke:currentColor;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
 .voiceIcon{width:16px;height:16px;display:block}.voiceIcon rect,.voiceIcon path{stroke:currentColor;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}.voiceBtn.listening{animation:voicePulse 1.25s ease-in-out infinite}.voiceBtn.listening .voiceIcon{transform:scale(1.05)}@keyframes voicePulse{0%,100%{box-shadow:0 0 0 0 rgba(83,202,255,0)}50%{box-shadow:0 0 0 5px rgba(83,202,255,.11)}}
+.voiceHint{font-size:9px;color:#71839e;margin:8px 0 13px;padding-left:3px}.voiceHint b{color:#cfe3ff;font-weight:700}
 .permissionNote{display:flex;align-items:flex-start;gap:12px;margin:0 0 14px;padding:14px 15px;border:1px solid #294264;background:linear-gradient(145deg,#0b1422,#0d1728);border-radius:13px;color:#8092ac;font-size:10px;line-height:1.6}.permissionNote b{display:block;color:#e5efff;font-size:11px;margin-bottom:2px}.permissionIcon{width:34px;height:34px;border-radius:10px;display:grid;place-items:center;background:#11223a;color:#75d8ff;flex:none}.importTools{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 14px}.fileBtn{border:1px solid #29456b;background:#0e1a2c;color:#cfe1f7;border-radius:9px;padding:9px 12px;font-size:10px;font-weight:700;cursor:pointer}.fileBtn input{display:none}
 
 
@@ -104,7 +105,7 @@ body:before{content:"";position:fixed;inset:0;pointer-events:none;background:rad
 <div class="view active" id="view-today">
 <div class="hero"><div><div class="eyebrow">Executive command center</div><h1 id="greeting">Good morning.<br>Here’s what matters.</h1><p id="heroSub">Your workspace is organized around what needs you.</p></div><div class="status"><span>System status</span><b><i class="dot"></i><span style="display:inline;color:#fff;text-transform:none;letter-spacing:0">Workspace secured</span></b></div></div>
 <div class="command" aria-label="MULTIWORK command center"><span class="spark">✦</span><input id="command" placeholder="Ask MULTIWORK AI anything…" autocomplete="off"><button id="voiceCommand" class="ask voiceBtn" title="Speak a command" aria-label="Speak a command"><svg class="voiceIcon" viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3M8.5 21h7"/></svg></button><button id="wakeWordToggle" class="wakeToggle" type="button" title="Listen for Hi MULTIWORK">Wake word off</button><button class="ask" id="ask">Ask MULTI</button></div>
-<div class="suggestions"><button class="suggestion" data-prompt="What requires my attention?">What requires my attention?</button><button class="suggestion" data-prompt="What do I have today?">What do I have today?</button><button class="suggestion" data-prompt="I'm overwhelmed">I’m overwhelmed</button></div>
+<div class="voiceHint" id="voiceHint">Voice ready · say <b>“Hi MULTIWORK”</b> to hand your next sentence directly to MULTIWORK AI.</div><div class="suggestions"><button class="suggestion" data-prompt="What requires my attention?">What requires my attention?</button><button class="suggestion" data-prompt="What do I have today?">What do I have today?</button><button class="suggestion" data-prompt="I'm overwhelmed">I’m overwhelmed</button></div>
 <div class="grid">
 <section class="panel"><div class="panelHead"><h2>Priority queue</h2><span id="priorityCount">Loading…</span></div><div class="priorities" id="priorityList"></div></section>
 <section class="panel"><div class="panelHead"><h2>Today</h2><span id="todayLabel"></span></div><div class="calendar"><div class="calTop"><b>Executive schedule</b><span id="eventCount"></span></div><div class="timeline" id="eventList"></div></div></section>
@@ -245,6 +246,7 @@ async function initAuth(){
       state.user={id:session.user.id,email:session.user.email||"",name:session.user.user_metadata?.full_name||session.user.email?.split("@")[0]||"Executive"};
       showApp();
       renderAll();
+      consumeVoiceIntent();
       withTimeout(loadWorkspace(),12000).catch(err=>{
         console.error("MULTIWORK workspace load:",err);
         toast("Workspace syncing",err.message||"Some data will appear shortly.");
@@ -458,25 +460,11 @@ async function syncGoogle(){
     await upsertIntegration("google","error",[],{});
   }
 }
-function parseIcsDate(v){if(!v)return null;const raw=v.replace(/^.*:/,"").trim();if(/^\\d{8}T\\d{6}Z$/.test(raw)){return new Date(Date.UTC(+raw.slice(0,4),+raw.slice(4,6)-1,+raw.slice(6,8),+raw.slice(9,11),+raw.slice(11,13),+raw.slice(13,15))).toISOString()}if(/^\\d{8}T\\d{6}$/.test(raw)){const d=new Date(+raw.slice(0,4),+raw.slice(4,6)-1,+raw.slice(6,8),+raw.slice(9,11),+raw.slice(11,13),+raw.slice(13,15));return d.toISOString()}if(/^\\d{8}$/.test(raw))return new Date(+raw.slice(0,4),+raw.slice(4,6)-1,+raw.slice(6,8)).toISOString();return null}
-async function importIcs(file){
-  if(!state.user||!file)return;
-  const text=await file.text();const unfolded=text.replace(/\\r?\\n[ \\t]/g,"");
-  const blocks=unfolded.split(/BEGIN:VEVENT/i).slice(1);let count=0;
-  for(const block of blocks){
-    const end=block.split(/END:VEVENT/i)[0];
-    const pick=k=>{const re=new RegExp("^"+k+"(?:;[^:]*)?:(.*)$","mi");return end.match(re)?.[1]?.trim()||""};
-    const start=parseIcsDate(pick("DTSTART")),finish=parseIcsDate(pick("DTEND"));const title=pick("SUMMARY")||"Imported event";if(!start)continue;
-    const externalId="ics_"+btoa(unescape(encodeURIComponent([title,start,pick("LOCATION")].join("|")))).replace(/[^a-z0-9]/gi,"").slice(0,50);
-    await supabase.from("events").upsert({user_id:state.user.id,title,starts_at:start,ends_at:finish,location:pick("LOCATION")||null,status:"scheduled",source_provider:"ics",source_external_id:externalId},{onConflict:"user_id,source_provider,source_external_id"});
-    count++;
-  }
-  await loadWorkspace();toast("Calendar imported",count+" event"+(count===1?"":"s")+" added from "+file.name+".");$("#syncStatus").textContent="Imported calendar from "+file.name+".";
-}
+function parseIcsDate(v){if(!v)return null;const raw=v.replace(/^.*:/,"").trim();if(/^\d{8}T\d{6}Z$/.test(raw)){return new Date(Date.UTC(+raw.slice(0,4),+raw.slice(4,6)-1,+raw.slice(6,8),+raw.slice(9,11),+raw.slice(11,13),+raw.slice(13,15))).toISOString()}if(/^\d{8}T\d{6}$/.test(raw)){const d=new Date(+raw.slice(0,4),+raw.slice(4,6)-1,+raw.slice(6,8),+raw.slice(9,11),+raw.slice(11,13),+raw.slice(13,15));return d.toISOString()}if(/^\d{8}$/.test(raw))return new Date(+raw.slice(0,4),+raw.slice(4,6)-1,+raw.slice(6,8)).toISOString();return null}
 function splitCsv(line){const out=[];let cur="",quoted=false;for(let i=0;i<line.length;i++){const c=line[i];if(c==='"'){if(quoted&&line[i+1]==='"'){cur+='"';i++;}else quoted=!quoted}else if(c===','&&!quoted){out.push(cur.trim());cur=""}else cur+=c}out.push(cur.trim());return out}
 async function importContactsCsv(file){
   if(!state.user||!file)return;
-  const text=await file.text();const lines=text.split(/\\r?\\n/).filter(Boolean);if(lines.length<2){toast("Contacts import","CSV needs a header row and at least one contact.");return}
+  const text=await file.text();const lines=text.split(/\r?\n/).filter(Boolean);if(lines.length<2){toast("Contacts import","CSV needs a header row and at least one contact.");return}
   const headers=splitCsv(lines[0]).map(x=>x.toLowerCase());let count=0;
   for(const line of lines.slice(1)){
     const vals=splitCsv(line);const row=Object.fromEntries(headers.map((h,i)=>[h,vals[i]||""]));const name=row.name||row.full_name||row.fullname||"";if(!name)continue;
@@ -488,9 +476,9 @@ async function importContactsCsv(file){
 function updateIntegrationUI(){
   const connected=!!state.googleToken||state.googleConnected||state.integrations.some(x=>x.provider==="google"&&x.status==="connected");
   ["dotCalendar","dotContacts","dotGmail"].forEach(id=>$( "#"+id)?.classList.toggle("on",connected));
-  ["connectContacts","connectGmail"].forEach(id=>{const b=$("#"+id);if(b){b.textContent=connected?"Sync Google":"Connect Google";b.classList.toggle("connected",connected);b.onclick=connected?syncGoogle:connectGoogle}});
-  ["statusCalendar","statusContacts","statusGmail"].forEach(id=>{const el=$("#"+id);if(el)el.textContent=connected?"Connected":"Waiting for Google"});
-  const btn=$("#connectGoogle");if(btn){btn.textContent=connected?"Sync Google":"Connect Google";btn.classList.toggle("connected",connected);btn.onclick=connected?syncGoogle:connectGoogle}
+  ["connectContacts","connectGmail"].forEach(id=>{const b=$("#"+id);if(b){b.textContent=connected?"Sync Google data":"Connect Google data";b.classList.toggle("connected",connected);b.onclick=connected?syncGoogle:connectGoogle}});
+  ["statusCalendar","statusContacts","statusGmail"].forEach(id=>{const el=$("#"+id);if(el)el.textContent=connected?"Connected":"Permission required"});
+  const btn=$("#connectGoogle");if(btn){btn.textContent=connected?"Sync Google data":"Connect Google data";btn.classList.toggle("connected",connected);btn.onclick=connected?syncGoogle:connectGoogle}
   const ai=$("#dotAI");if(ai)ai.classList.toggle("on",!!window.__multiworkAIReady);
   $("#ctxEvents").textContent=state.events.length+state.external.filter(x=>x.kind==="calendar_event").length;
   $("#ctxPeople").textContent=state.contacts.length+state.external.filter(x=>x.kind==="contact").length;
