@@ -419,6 +419,7 @@ function startVoiceCommand(fromWake=false,announce=true,session=true){
     setVoiceButton(false);
     speakAssistant("Hi, I am listening.",()=>{
       state.voiceIgnoreUntil=Date.now()+250;
+      window.__voiceRecognition=recognition;
       try{
         recognition.start();
       }catch{
@@ -449,7 +450,7 @@ function startWakeWord(){
     let heard="";
     for(let i=e.resultIndex;i<e.results.length;i++)heard+=(e.results[i][0]?.transcript||"")+" ";
     heard=heard.trim();
-    const match=heard.match(/\b(?:hey\s+)?hi\s+multiwork\b([\s,.:;-]*)(.*)$/i);
+    const match=heard.match(/\b(?:hi|hey)[\s,]+multiwork\b([\s,.:;-]*)(.*)$/i);
     if(!match)return;
     const command=(match[2]||"").trim();
     stopWakeWord(true);
@@ -872,8 +873,7 @@ function commandAnswer(raw,target,options={}){
     const needle=raw.replace(/.*?\b(?:delegate|assign)\b/i,"").replace(/^\s+(?:the\s+)?task\s+/i,"").trim().toLowerCase();
     const task=state.tasks.find(t=>needle&&String(t.title||"").toLowerCase().includes(needle));
     if(task){
-      delegateTask(task.id);
-      if(voice)speakAssistant("I’ve delegated that task.");
+      delegateTask(task.id).then(()=>{if(voice)speakAssistant("I’ve delegated that task.");});
       return;
     }
     toast("Which task?","Say “delegate [task name]”.");
@@ -884,8 +884,7 @@ function commandAnswer(raw,target,options={}){
     const needle=raw.replace(/.*?\b(?:complete|finish|close|mark done)\b/i,"").replace(/^\s+(?:the\s+)?task\s+/i,"").trim().toLowerCase();
     const task=state.tasks.find(t=>needle&&String(t.title||"").toLowerCase().includes(needle));
     if(task){
-      completeTask(task.id);
-      if(voice)speakAssistant("Task completed.");
+      completeTask(task.id).then(()=>{if(voice)speakAssistant("Task completed.");});
       return;
     }
     toast("Which task?","Say “complete [task name]”.");
