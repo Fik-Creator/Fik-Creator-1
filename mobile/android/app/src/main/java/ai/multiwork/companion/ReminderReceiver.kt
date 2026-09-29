@@ -10,6 +10,7 @@ class ReminderReceiver : BroadcastReceiver() {
         val service = Intent(context, OverlayReminderService::class.java).apply {
             putExtra("title", intent.getStringExtra("title") ?: "MULTIWORK reminder")
             putExtra("message", intent.getStringExtra("message") ?: "You have a reminder.")
+            putExtra("actionUrl", intent.getStringExtra("actionUrl") ?: "")
         }
         ContextCompat.startForegroundService(context, service)
     }
