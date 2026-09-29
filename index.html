@@ -177,6 +177,28 @@ function showAuth(mode="signin"){
 }
 function showApp(){ $("#authScreen").classList.add("hidden");$("#appScreen").classList.remove("hidden") }
 function hideLoading(){}
+const FAST_ACTION_MS=1500;
+function runFast(action,onDone,onError,onTimeout){
+  const work=Promise.resolve().then(action);
+  let finished=false;
+  const timer=setTimeout(()=>{
+    if(finished)return;
+    finished=true;
+    onTimeout?.();
+  },FAST_ACTION_MS);
+  work.then(value=>{
+    clearTimeout(timer);
+    if(finished){ if(!value?.error) setTimeout(()=>loadWorkspace().catch(()=>{}),0); return; }
+    finished=true;
+    onDone?.(value);
+  }).catch(err=>{
+    clearTimeout(timer);
+    if(finished)return;
+    finished=true;
+    onError?.(err);
+  });
+  return work;
+}
 function withTimeout(promise, ms=12000){
   return Promise.race([
     promise,
@@ -319,16 +341,25 @@ async function connectGoogle(){
   if(data?.url) window.location.href=data.url;
 }
 async function signInWithGoogle(){
-  const {data,error}=await supabase.auth.signInWithOAuth({
-    provider:"google",
-    options:{
-      scopes:"openid email profile",
-      queryParams:{access_type:"offline",prompt:"select_account"},
-      redirectTo:window.location.origin+window.location.pathname
+  try{
+    const {data,error}=await supabase.auth.signInWithOAuth({
+      provider:"google",
+      options:{
+        scopes:"openid email profile",
+        queryParams:{access_type:"offline",prompt:"select_account"},
+        redirectTo:window.location.origin+window.location.pathname
+      }
+    });
+    if(error)throw error;
+    if(data?.url)window.location.href=data.url;
+  }catch(error){
+    const msg=String(error?.message||"Google sign-in failed");
+    if(/unsupported provider|provider.*not enabled/i.test(msg)){
+      toast("Google sign-in not enabled","Enable Google under Supabase Authentication → Providers, then add the Google Client ID and Secret.");
+    }else{
+      toast("Google sign-in failed",msg);
     }
-  });
-  if(error){toast("Google sign-in needs setup",error.message);return}
-  if(data?.url)window.location.href=data.url;
+  }
 }
 async function upsertIntegration(provider,status,capabilities,metadata={}){
   if(!state.user)return;
@@ -413,53 +444,75 @@ async function testAI(){
 }
 
 async function handleAuthSubmit(e){
-  e.preventDefault();const email=$("#authEmail").value.trim(),password=$("#authPassword").value,signup=!$("#nameField").classList.contains("hidden"),name=$("#authName").value.trim();
+  e.preventDefault();
+  const email=$("#authEmail").value.trim(),password=$("#authPassword").value;
+  const signup=!$("#nameField").classList.contains("hidden"),name=$("#authName").value.trim();
   if(!email||!password){setMessage("error","Enter your email and password.");return}
+  if(password.length<8){setMessage("error","Use a password with at least 8 characters.");return}
   if(signup&&!name){setMessage("error","Enter your full name.");return}
-  const button=$("#authSubmit");button.disabled=true;button.textContent=signup?"Creating…":"Signing in…";setMessage("","");
-  try{
-    if(signup){
-      const {data,error}=await supabase.auth.signUp({email,password,options:{data:{full_name:name}}});
-      if(error)throw error;
-      if(data?.session&&data?.user){
-        state.user={id:data.user.id,email:data.user.email||email,name};
-        showApp();renderAll();
-        loadWorkspace().catch(err=>{console.error(err);toast("Workspace syncing","Your account is ready; workspace data will appear shortly.")});
-        toast("Welcome to MULTIWORK AI","Your executive workspace is ready.");
-      }else if(data?.user){
-        const retry=await supabase.auth.signInWithPassword({email,password});
-        if(retry.data?.session&&retry.data?.user){
-          state.user={id:retry.data.user.id,email:retry.data.user.email||email,name};
-          showApp();renderAll();
-          loadWorkspace().catch(err=>console.error(err));
-          toast("Welcome to MULTIWORK AI","Your executive workspace is ready.");
-        }else if(String(retry.error?.message||"").toLowerCase().includes("email not confirmed")){
-          showAuth("signin");
-          setMessage("success","Account created. Check your email to confirm your account, then sign in.");
-        }else{
-          throw retry.error||new Error("MULTIWORK AI could not establish your session. Please sign in again.");
-        }
-      }else{
-        showAuth("signup");
-        setMessage("error","MULTIWORK AI could not create the account. Please try again.");
-      }
-    }else{
-      const {data,error}=await supabase.auth.signInWithPassword({email,password});
-      if(error)throw error;
-      state.user={id:data.user.id,email:data.user.email||email,name:data.user.user_metadata?.full_name||email.split("@")[0]};
+
+  const button=$("#authSubmit");
+  button.disabled=true;
+  button.textContent=signup?"Creating…":"Signing in…";
+  setMessage("","");
+
+  let completed=false;
+  const finish=async(data)=>{
+    if(completed)return;
+    completed=true;
+    button.disabled=false;
+    button.textContent=signup?"Create account":"Sign in";
+    if(data?.error)throw data.error;
+    const user=data?.data?.user,session=data?.data?.session;
+    if(session&&user){
+      state.user={id:user.id,email:user.email||email,name:signup?name:(user.user_metadata?.full_name||email.split("@")[0])};
       showApp();renderAll();
-      loadWorkspace().catch(err=>{console.error(err);toast("Workspace syncing","Your dashboard is open while your data finishes loading.")});
+      loadWorkspace().catch(err=>{console.error(err);toast("Workspace syncing","Your dashboard is open while data finishes loading.")});
+      toast(signup?"Welcome to MULTIWORK AI":"Welcome back","Your executive workspace is ready.");
+      return;
     }
-  }catch(err){
-    console.error("MULTIWORK auth error:",err);
-    const message=String(err?.message||"Authentication failed. Please try again.");
-    const friendly=message.toLowerCase().includes("rate limit")?"Too many attempts right now. Wait a minute and try again."
-      :message.toLowerCase().includes("already registered")?"An account with this email already exists. Switch to Sign in."
-      :message.toLowerCase().includes("password")?"Use a stronger password with at least 8 characters."
-      :message;
+    if(signup&&user){
+      const retry=await withTimeout(supabase.auth.signInWithPassword({email,password}),FAST_ACTION_MS).catch(error=>({error}));
+      if(retry?.data?.session&&retry?.data?.user){
+        state.user={id:retry.data.user.id,email:retry.data.user.email||email,name};
+        showApp();renderAll();loadWorkspace().catch(()=>{});
+        toast("Welcome to MULTIWORK AI","Your executive workspace is ready.");
+      }else if(String(retry?.error?.message||"").toLowerCase().includes("email not confirmed")){
+        showAuth("signin");
+        setMessage("success","Account created. Confirm your email, then sign in.");
+      }else if(retry?.error){
+        setMessage("error",retry.error.message||"Account created. Sign in again to continue.");
+      }
+    }
+  };
+
+  const work=signup
+    ? supabase.auth.signUp({email,password,options:{data:{full_name:name}}})
+    : supabase.auth.signInWithPassword({email,password});
+
+  work.then(result=>finish({data:result})).catch(error=>{
+    if(completed)return;
+    completed=true;
+    button.disabled=false;
+    button.textContent=signup?"Create account":"Sign in";
+    const msg=String(error?.message||"Authentication failed. Please try again.");
+    const friendly=/rate limit/i.test(msg)?"Too many attempts right now. Try again shortly."
+      :/already registered/i.test(msg)?"An account with this email already exists. Switch to Sign in."
+      :/password/i.test(msg)?"Use a stronger password with at least 8 characters."
+      :/network|fetch|timeout/i.test(msg)?"The connection is slow. Please try again."
+      :msg;
     setMessage("error",friendly);
-  }
-  finally{button.disabled=false;button.textContent=signup?"Create account":"Sign in"}
+  });
+
+  setTimeout(()=>{
+    if(completed)return;
+    completed=true;
+    button.disabled=false;
+    button.textContent=signup?"Create account":"Sign in";
+    setMessage("success",signup
+      ?"Your account request is still processing in the background. You can continue once Supabase finishes."
+      :"Your sign-in request is taking longer than expected. Try again in a moment.");
+  },FAST_ACTION_MS);
 }
 async function init(){
   try{await initAuth();}
@@ -511,9 +564,9 @@ async function showOnboarding(){
   $("#modalCancel").classList.add("hidden");
   $("#modalPrimary").onclick=async()=>{const name=$("#onName").value.trim();const role=$("#onRole").value.trim()||"Executive";const company=$("#onCompany").value.trim();const timezone=$("#onTimezone").value;
     if(!name){toast("Name required","Add your name so MULTIWORK AI can personalize your workspace.");return}
-    const {error}=await supabase.from("profiles").upsert({id:state.user.id,full_name:name,role,company,timezone,onboarding_completed:true,updated_at:new Date().toISOString()});
-    if(error){toast("Could not save",error.message);return}
-    $("#modal").classList.remove("open");await loadWorkspace();toast("Workspace ready","MULTIWORK AI is now personalized for "+name+".");
+    const r=await withTimeout(supabase.from("profiles").upsert({id:state.user.id,full_name:name,role,company,timezone,onboarding_completed:true,updated_at:new Date().toISOString()}),FAST_ACTION_MS).catch(error=>({error}));
+    if(r.error){$("#modal").classList.remove("open");toast(/timed out/i.test(String(r.error.message))?"Profile update sent":"Could not save",/timed out/i.test(String(r.error.message))?"MULTIWORK will refresh when the server finishes.":r.error.message);loadWorkspace().catch(()=>{});return}
+    $("#modal").classList.remove("open");loadWorkspace().catch(()=>{});toast("Workspace ready","MULTIWORK AI is personalized for "+name+".");
   };
 }
 
@@ -552,12 +605,12 @@ function dueText(d){const x=new Date(d),now=new Date(),diff=x-now;if(diff<0)retu
 function renderPeople(){const list=$("#peopleList");list.innerHTML=state.contacts.length?state.contacts.map(c=>`<div class="row"><div class="person"><div class="personAvatar">${initials(c.full_name)}</div><div class="rowMain"><b>${escapeHtml(c.full_name)}</b><p>${escapeHtml([c.role,c.company,c.next_follow_up_at?("follow-up "+dueText(c.next_follow_up_at)):""].filter(Boolean).join(" · "))}</p></div></div><button class="secondaryBtn deleteContact" data-id="${c.id}">Remove</button></div>`).join(""):'<div class="empty">No people yet. Add the relationships that matter most.</div>';qsa(".deleteContact").forEach(b=>b.onclick=()=>removeContact(b.dataset.id))}
 function renderWork(){const work=state.tasks.filter(t=>["work","decision","project"].includes(String(t.owner_type||"").toLowerCase())||/proposal|contract|project|review|meeting/i.test(t.title));$("#workList").innerHTML=work.length?work.map(t=>`<div class="row"><div class="rowMain"><b>${escapeHtml(t.title)}</b><p>${escapeHtml(t.description||t.status||"Active workstream")}</p></div><div class="rowActions"><button class="secondaryBtn summarizeWork" data-id="${t.id}">Summarize</button><button class="secondaryBtn completeWork" data-id="${t.id}">Complete</button></div></div>`).join(""):'<div class="empty">No workstreams yet. Create one to start building your executive operating history.</div>';qsa(".summarizeWork").forEach(b=>b.onclick=()=>summarizeTask(b.dataset.id));qsa(".completeWork").forEach(b=>b.onclick=()=>completeTask(b.dataset.id))}
 function renderTasks(){const list=$("#taskList");list.innerHTML=state.tasks.length?state.tasks.map(t=>`<div class="row" style="${["completed","done"].includes((t.status||"").toLowerCase())?"opacity:.45":""}"><div class="rowMain"><b>${escapeHtml(t.title)}</b><p>${escapeHtml((t.owner_type||"YOU")+" · "+(t.due_at?dueText(t.due_at):"No due date")+" · "+(t.status||"open"))}</p></div><div class="rowActions"><button class="secondaryBtn taskDone" data-id="${t.id}">Complete</button><button class="secondaryBtn taskDelegate" data-id="${t.id}">Delegate</button></div></div>`).join(""):'<div class="empty">No tasks yet. Create your first task.</div>';qsa(".taskDone").forEach(b=>b.onclick=()=>completeTask(b.dataset.id));qsa(".taskDelegate").forEach(b=>b.onclick=()=>delegateTask(b.dataset.id))}
-async function completeTask(id){const {error}=await supabase.from("tasks").update({status:"completed",updated_at:new Date().toISOString()}).eq("id",id).eq("user_id",state.user.id);if(error){toast("Could not update",error.message);return}await loadWorkspace();toast("Completed","MULTIWORK AI removed that item from your active attention.")}
-async function delegateTask(id){const {error}=await supabase.from("tasks").update({status:"delegated",owner_type:"delegate",updated_at:new Date().toISOString()}).eq("id",id).eq("user_id",state.user.id);if(error){toast("Could not delegate",error.message);return}await loadWorkspace();toast("Delegated","The task is now outside your immediate attention.")}
-async function removeContact(id){const {error}=await supabase.from("contacts").delete().eq("id",id).eq("user_id",state.user.id);if(error){toast("Could not remove",error.message);return}await loadWorkspace();toast("Removed","The person was removed from your workspace.")}
-async function addTask(){showModal("New task","Add a task to your executive queue.",`<div class="field"><label>TASK</label><input class="modalInput" id="newTitle" placeholder="What needs to be done?"></div><div class="field"><label>PRIORITY</label><select class="modalInput" id="newPriority"><option value="high">High</option><option value="normal" selected>Medium</option><option value="low">Low</option></select></div><div class="field"><label>DUE DATE</label><input class="modalInput" id="newDue" type="datetime-local"></div>`,"Create task");$("#modalPrimary").onclick=async()=>{const title=$("#newTitle").value.trim();if(!title){toast("Task name required","Give the task a name.");return}const due=$("#newDue").value?new Date($("#newDue").value).toISOString():null;const {error}=await supabase.from("tasks").insert({user_id:state.user.id,title,status:"open",priority:$("#newPriority").value,owner_type:"you",due_at:due});if(error){toast("Could not create",error.message);return}$("#modal").classList.remove("open");await loadWorkspace();toast("Task created",title+" is now in your queue.")}}
-async function addPerson(){showModal("Add person","Keep an important relationship in your executive workspace.",`<div class="field"><label>NAME</label><input class="modalInput" id="personName" placeholder="Full name"></div><div class="field"><label>ROLE</label><input class="modalInput" id="personRole" placeholder="Role"></div><div class="field"><label>COMPANY</label><input class="modalInput" id="personCompany" placeholder="Company"></div><div class="field"><label>NOTES</label><input class="modalInput" id="personNotes" placeholder="Anything useful to remember"></div>`,"Add person");$("#modalPrimary").onclick=async()=>{const name=$("#personName").value.trim();if(!name){toast("Name required","Add a name.");return}const {error}=await supabase.from("contacts").insert({user_id:state.user.id,full_name:name,role:$("#personRole").value.trim()||null,company:$("#personCompany").value.trim()||null,notes:$("#personNotes").value.trim()||null});if(error){toast("Could not add",error.message);return}$("#modal").classList.remove("open");await loadWorkspace();toast("Person added",name+" is now part of your network.")}}
-async function addWork(){showModal("New work item","Create a workstream or decision.",`<div class="field"><label>NAME</label><input class="modalInput" id="workTitle" placeholder="Acquisition, contract review…"></div><div class="field"><label>DESCRIPTION</label><input class="modalInput" id="workDesc" placeholder="What is this about?"></div>`,"Create");$("#modalPrimary").onclick=async()=>{const title=$("#workTitle").value.trim();if(!title){toast("Name required","Give the work item a name.");return}const {error}=await supabase.from("tasks").insert({user_id:state.user.id,title,description:$("#workDesc").value.trim()||null,status:"open",priority:"high",owner_type:"you"});if(error){toast("Could not create",error.message);return}$("#modal").classList.remove("open");await loadWorkspace();setView("work");toast("Work item created",title+" is now active.")}}
+async function completeTask(id){try{const r=await withTimeout(supabase.from("tasks").update({status:"completed",updated_at:new Date().toISOString()}).eq("id",id).eq("user_id",state.user.id),FAST_ACTION_MS);if(r.error)throw r.error;loadWorkspace().catch(()=>{});toast("Completed","Removed from your active attention.");}catch(err){toast(/timed out/i.test(String(err?.message))?"Update sent":"Could not update",/timed out/i.test(String(err?.message))?"MULTIWORK will refresh when the server finishes.":err.message)}}
+async function delegateTask(id){try{const r=await withTimeout(supabase.from("tasks").update({status:"delegated",owner_type:"delegate",updated_at:new Date().toISOString()}).eq("id",id).eq("user_id",state.user.id),FAST_ACTION_MS);if(r.error)throw r.error;loadWorkspace().catch(()=>{});toast("Delegated","The task is now outside your immediate attention.");}catch(err){toast(/timed out/i.test(String(err?.message))?"Update sent":"Could not delegate",/timed out/i.test(String(err?.message))?"MULTIWORK will refresh when the server finishes.":err.message)}}
+async function removeContact(id){try{const r=await withTimeout(supabase.from("contacts").delete().eq("id",id).eq("user_id",state.user.id),FAST_ACTION_MS);if(r.error)throw r.error;loadWorkspace().catch(()=>{});toast("Removed","The person was removed from your workspace.");}catch(err){toast(/timed out/i.test(String(err?.message))?"Update sent":"Could not remove",/timed out/i.test(String(err?.message))?"MULTIWORK will refresh when the server finishes.":err.message)}}
+async function addTask(){showModal("New task","Add a task to your executive queue.",`<div class="field"><label>TASK</label><input class="modalInput" id="newTitle" placeholder="What needs to be done?"></div><div class="field"><label>PRIORITY</label><select class="modalInput" id="newPriority"><option value="high">High</option><option value="normal" selected>Medium</option><option value="low">Low</option></select></div><div class="field"><label>DUE DATE</label><input class="modalInput" id="newDue" type="datetime-local"></div>`,"Create task");$("#modalPrimary").onclick=async()=>{const title=$("#newTitle").value.trim();if(!title){toast("Task name required","Give the task a name.");return}const due=$("#newDue").value?new Date($("#newDue").value).toISOString():null;const r=await withTimeout(supabase.from("tasks").insert({user_id:state.user.id,title,status:"open",priority:$("#newPriority").value,owner_type:"you",due_at:due}),FAST_ACTION_MS).catch(error=>({error}));if(r.error){if(/timed out/i.test(String(r.error.message))){$("#modal").classList.remove("open");toast("Task sent","MULTIWORK will add it as soon as the server finishes.");loadWorkspace().catch(()=>{});return}toast("Could not create",r.error.message);return}$("#modal").classList.remove("open");loadWorkspace().catch(()=>{});toast("Task created",title+" is now in your queue.")}}
+async function addPerson(){showModal("Add person","Keep an important relationship in your executive workspace.",`<div class="field"><label>NAME</label><input class="modalInput" id="personName" placeholder="Full name"></div><div class="field"><label>ROLE</label><input class="modalInput" id="personRole" placeholder="Role"></div><div class="field"><label>COMPANY</label><input class="modalInput" id="personCompany" placeholder="Company"></div><div class="field"><label>NOTES</label><input class="modalInput" id="personNotes" placeholder="Anything useful to remember"></div>`,"Add person");$("#modalPrimary").onclick=async()=>{const name=$("#personName").value.trim();if(!name){toast("Name required","Add a name.");return}const r=await withTimeout(supabase.from("contacts").insert({user_id:state.user.id,full_name:name,role:$("#personRole").value.trim()||null,company:$("#personCompany").value.trim()||null,notes:$("#personNotes").value.trim()||null}),FAST_ACTION_MS).catch(error=>({error}));if(r.error){if(/timed out/i.test(String(r.error.message))){$("#modal").classList.remove("open");toast("Person request sent","MULTIWORK will refresh when the server finishes.");loadWorkspace().catch(()=>{});return}toast("Could not add",r.error.message);return}$("#modal").classList.remove("open");loadWorkspace().catch(()=>{});toast("Person added",name+" is now part of your network.")}}
+async function addWork(){showModal("New work item","Create a workstream or decision.",`<div class="field"><label>NAME</label><input class="modalInput" id="workTitle" placeholder="Acquisition, contract review…"></div><div class="field"><label>DESCRIPTION</label><input class="modalInput" id="workDesc" placeholder="What is this about?"></div>`,"Create");$("#modalPrimary").onclick=async()=>{const title=$("#workTitle").value.trim();if(!title){toast("Name required","Give the work item a name.");return}const r=await withTimeout(supabase.from("tasks").insert({user_id:state.user.id,title,description:$("#workDesc").value.trim()||null,status:"open",priority:"high",owner_type:"you"}),FAST_ACTION_MS).catch(error=>({error}));if(r.error){if(/timed out/i.test(String(r.error.message))){$("#modal").classList.remove("open");toast("Work item sent","MULTIWORK will refresh when the server finishes.");loadWorkspace().catch(()=>{});setView("work");return}toast("Could not create",r.error.message);return}$("#modal").classList.remove("open");loadWorkspace().catch(()=>{});setView("work");toast("Work item created",title+" is now active.")}}
 function summarizeTask(id){const t=state.tasks.find(x=>x.id===id);if(!t)return;showModal("Executive summary",t.title,`<div style="color:#999ca4;font-size:12px;line-height:1.7"><b>Priority:</b> ${escapeHtml(t.priority||"normal")}<br><b>Status:</b> ${escapeHtml(t.status||"open")}<br><b>Owner:</b> ${escapeHtml(t.owner_type||"YOU")}<br><b>Next step:</b> ${escapeHtml(t.description||"Review this item and decide the next action.")}</div>`,"Close");$("#modalPrimary").onclick=()=>$("#modal").classList.remove("open")}
 function showModal(title,text,body,action){$("#modalTitle").textContent=title;$("#modalText").textContent=text;$("#modalBody").innerHTML=body;$("#modalPrimary").textContent=action||"Done";$("#modalCancel").classList.remove("hidden");$("#modal").classList.add("open")}
 function setView(name){state.view=name;$( ".view").forEach(v=>v.classList.remove("active"));$("#view-"+name).classList.add("active");qsa(".nav button").forEach(b=>b.classList.toggle("active",b.dataset.view===name));$("#crumb").textContent=name==="today"?"Today":name==="ask"?"Ask MULTI":name[0].toUpperCase()+name.slice(1);if(name==="ask")setTimeout(()=>$("#command2").focus(),60)}
