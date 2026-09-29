@@ -419,7 +419,7 @@ async function createMessageDraft(contact,topic,tone="neutral"){
   if(!session){toast("Sign in required","Your workspace session is missing.");return}
   const toneRule=tone==="urgent"?"Make it concise and action-oriented.":tone==="frustrated"?"Make it calm, respectful and solution-focused.":tone==="positive"?"Make it warm and appreciative.":"Make it polished, natural and professional.";
   try{
-    const res=await fetch("/api/ai",{method:"POST",headers:{"Content-Type":"application/json",Authorization:"Bearer "+session.access_token},body:JSON.stringify({
+    const res=await fetch(MULTIWORK_API_URL,{method:"POST",headers:{"Content-Type":"application/json",Authorization:"Bearer "+session.access_token},body:JSON.stringify({
       message:"Draft a professional text message to "+contact.full_name+" about: "+topic+". "+toneRule+" Return only the message body.",
       context:{profile:state.profile,contact:{name:contact.full_name,role:contact.role,company:contact.company},conversation:state.conversationHistory.slice(-8),voiceTone:tone}
     })});
@@ -846,7 +846,7 @@ async function testAI(){
   const {data:{session}}=await supabase.auth.getSession();
   if(!session){toast("Sign in required","Your workspace session is missing.");return}
   try{
-    const res=await fetch("/api/ai",{method:"POST",headers:{"Content-Type":"application/json",Authorization:"Bearer "+session.access_token},body:JSON.stringify({message:"Reply with exactly: MULTIWORK AI is connected.",context:{profile:state.profile,tasks:state.tasks.slice(0,20),events:state.events.slice(0,20),contacts:state.contacts.slice(0,20),external:state.external.slice(0,50),notes:state.notes.slice(0,10)}})});
+    const res=await fetch(MULTIWORK_API_URL,{method:"POST",headers:{"Content-Type":"application/json",Authorization:"Bearer "+session.access_token},body:JSON.stringify({message:"Reply with exactly: MULTIWORK AI is connected.",context:{profile:state.profile,tasks:state.tasks.slice(0,20),events:state.events.slice(0,20),contacts:state.contacts.slice(0,20),external:state.external.slice(0,50),notes:state.notes.slice(0,10)}})});
     const data=await res.json();if(!res.ok)throw new Error(data.error||"AI endpoint unavailable");
     window.__multiworkAIReady=true;updateIntegrationUI();toast("AI connected",data.output||"OpenAI is responding.");
   }catch(err){toast("AI not connected",err.message)}
@@ -1030,7 +1030,7 @@ async function askAI(raw,target,options={}){
   box.classList.remove("hidden");
   box.innerHTML="<b>MULTIWORK AI is thinking…</b><p>Reading the context you have connected.</p>";
   try{
-    const res=await fetch("/api/ai",{method:"POST",headers:{"Content-Type":"application/json",Authorization:"Bearer "+session.access_token},body:JSON.stringify({
+    const res=await fetch(MULTIWORK_API_URL,{method:"POST",headers:{"Content-Type":"application/json",Authorization:"Bearer "+session.access_token},body:JSON.stringify({
       message:raw,
       context:{profile:state.profile,tasks:state.tasks.slice(0,50),events:state.events.slice(0,50),contacts:state.contacts.slice(0,50),external:state.external.slice(0,120),notes:state.notes.slice(0,20),conversation:{history:state.conversationHistory.slice(-10),tone:options?.voiceTone||"neutral",pending:state.dialogue||null}}
     })});
