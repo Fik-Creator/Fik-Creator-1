@@ -153,7 +153,8 @@ const SUPABASE_URL="https://cjsiwwbqbmviucpezglt.supabase.co";
 const SUPABASE_KEY="sb_publishable_lFUwGLc3b7qJ1U7rKomv1g_LKM7AQzp";
 let supabase=createClient(SUPABASE_URL,SUPABASE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
 
-const $=s=>document.querySelector(s), $=s=>document.querySelectorAll(s);
+const $=s=>document.querySelector(s);
+const $=s=>document.querySelectorAll(s);
 
 // No startup overlay: the executive shell renders immediately; data hydrates in the background.
 const state={user:null,profile:null,tasks:[],events:[],contacts:[],external:[],notes:[],integrations:[],googleToken:null,googleRefreshToken:null,googleConnected:false,voiceListening:false,wakeListening:false,wakeEnabled:localStorage.getItem("multiwork_wake_word")==="1",view:"today"};
