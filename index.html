@@ -184,8 +184,7 @@ function withTimeout(promise, ms=12000){
 }
 async function initAuth(){
   // Never block the executive shell on network/database hydration.
-  showApp();
-  renderAll();
+  showAuth("signin");
   hideLoading();
   const sessionPromise=withTimeout(supabase.auth.getSession(),1800);
   try{
@@ -216,10 +215,6 @@ function captureProviderToken(session){
 }
 const GOOGLE_SCOPES=["openid","email","profile","https://www.googleapis.com/auth/calendar.events.readonly","https://www.googleapis.com/auth/contacts.readonly","https://www.googleapis.com/auth/gmail.readonly"].join(" ");
 function speakAssistant(text){
-  if(!("speechSynthesis" in window)||!text)return;
-  try{window.speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(text.slice(0,1200));u.lang="en-NG";u.rate=.98;u.pitch=1;window.speechSynthesis.speak(u)}catch{}
-}
-async function speakAssistant(text){
   if(!("speechSynthesis" in window)||!text)return;
   try{window.speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(String(text).slice(0,1200));u.lang="en-NG";u.rate=.96;u.pitch=1;window.speechSynthesis.speak(u)}catch{}
 }
@@ -466,7 +461,6 @@ async function loadWorkspace(){
   state.tasks=data.tasks?.data||[];state.events=data.events?.data||[];state.contacts=data.contacts?.data||[];
   state.external=data.external?.data||[];state.notes=data.notes?.data||[];state.integrations=data.integrations?.data||[];
   updateIntegrationUI();
-  if(!state.profile||!state.profile.onboarding_completed){await showOnboarding();return}
   renderAll();
 }
 
@@ -531,7 +525,7 @@ async function addWork(){showModal("New work item","Create a workstream or decis
 function summarizeTask(id){const t=state.tasks.find(x=>x.id===id);if(!t)return;showModal("Executive summary",t.title,`<div style="color:#999ca4;font-size:12px;line-height:1.7"><b>Priority:</b> ${escapeHtml(t.priority||"normal")}<br><b>Status:</b> ${escapeHtml(t.status||"open")}<br><b>Owner:</b> ${escapeHtml(t.owner_type||"YOU")}<br><b>Next step:</b> ${escapeHtml(t.description||"Review this item and decide the next action.")}</div>`,"Close");$("#modalPrimary").onclick=()=>$("#modal").classList.remove("open")}
 function showModal(title,text,body,action){$("#modalTitle").textContent=title;$("#modalText").textContent=text;$("#modalBody").innerHTML=body;$("#modalPrimary").textContent=action||"Done";$("#modalCancel").classList.remove("hidden");$("#modal").classList.add("open")}
 function setView(name){state.view=name;$( ".view").forEach(v=>v.classList.remove("active"));$("#view-"+name).classList.add("active");$$(".nav button").forEach(b=>b.classList.toggle("active",b.dataset.view===name));$("#crumb").textContent=name==="today"?"Today":name==="ask"?"Ask MULTI":name[0].toUpperCase()+name.slice(1);if(name==="ask")setTimeout(()=>$("#command2").focus(),60)}
-async function askAI(raw,target){
+async function askAI(raw,target,options={}){
   const {data:{session}}=await supabase.auth.getSession();
   if(!session){toast("Sign in required","Your workspace session is missing.");return}
   const box=target==="ask"?$("#aiResult"):$("#aiResult");
@@ -547,7 +541,7 @@ async function askAI(raw,target){
     window.__multiworkAIReady=true;updateIntegrationUI();
     box.innerHTML="<b>MULTIWORK AI</b><p>"+escapeHtml(data.output||"No response generated.")+"</p>";
     if(target==="voice"||options?.voice) speakAssistant(data.output||"");
-    if(target==="command"){toast("MULTIWORK AI","I used your connected workspace context.");if(target==="voice")speakAssistant(data.output||"Done.")}
+    if(target==="command")toast("MULTIWORK AI","I used your connected workspace context.");
   }catch(err){
     box.innerHTML="<b>AI connection needed</b><p>"+escapeHtml(err.message)+"</p>";
     toast("AI unavailable",err.message);
@@ -569,7 +563,7 @@ else if(q.includes("people")||q.includes("contact")){title="People";msg=state.co
 else if(q.includes("task")){title="Tasks";msg="You have "+openCount()+" open task"+(openCount()===1?"":"s")+" and "+state.tasks.filter(t=>t.status==="delegated").length+" delegated."}
 else return askAI(raw,target,options);
 $("#aiResult").classList.remove("hidden");$("#aiResult").innerHTML="<b>"+escapeHtml(title)+"</b><p>"+escapeHtml(msg)+"</p><div class='resultActions'><button class='primaryBtn' id='resultGo'>Open workspace</button></div>";$("#resultGo").onclick=()=>{setView(q.includes("people")?"people":q.includes("task")?"tasks":"today")};if(target==="command")toast(title,msg);if(options.voice)speakAssistant(msg)}
-$("#ask").onclick=()=>commandAnswer($("#command").value,"command");
+$("#ask")?.addEventListener("click",()=>commandAnswer($("#command").value,"command"));
 $("#connectGoogle")?.addEventListener("click",connectGoogle);
 $("#connectContacts")?.addEventListener("click",connectGoogle);
 $("#connectGmail")?.addEventListener("click",connectGoogle);
@@ -582,8 +576,8 @@ $("#syncAll")?.addEventListener("click",syncGoogle);
 $("#disconnectGoogle")?.addEventListener("click",async()=>{state.googleToken=null;state.googleConnected=false;await upsertIntegration("google","disconnected",[],{});updateIntegrationUI();toast("Google disconnected","MULTIWORK will no longer use Google context until you reconnect it.");});
 $("#openNotes")?.addEventListener("click",openNotes);
 $("#testAI")?.addEventListener("click",testAI);$("#ask2").onclick=()=>commandAnswer($("#command2").value,"ask");$("#command").addEventListener("keydown",e=>{if(e.key==="Enter")commandAnswer($("#command").value,"command")});$("#command2").addEventListener("keydown",e=>{if(e.key==="Enter")commandAnswer($("#command2").value,"ask")});$$(".suggestion").forEach(b=>b.onclick=()=>{$("#command").value=b.dataset.prompt;commandAnswer(b.dataset.prompt,"command")});
-$$(".nav button").forEach(b=>b.onclick=()=>setView(b.dataset.view));$("#newTask").onclick=addTask;$("#addPerson").onclick=addPerson;$("#newWork").onclick=addWork;$("#modalCancel").onclick=()=>$("#modal").classList.remove("open");$("#modal").addEventListener("click",e=>{if(e.target.id==="modal")$("#modal").classList.remove("open")});
-$("#bell").onclick=()=>showModal("Notifications","Your current workspace has no urgent notifications.","<div class='empty'>You’re all clear.</div>","Close");$("#modalPrimary").onclick=()=>$("#modal").classList.remove("open");
+$$(".nav button").forEach(b=>b.onclick=()=>setView(b.dataset.view));$("#newTask")?.addEventListener("click",addTask);$("#addPerson")?.addEventListener("click",addPerson);$("#newWork")?.addEventListener("click",addWork);$("#modalCancel")?.addEventListener("click",()=>$("#modal").classList.remove("open"));$("#modal")?.addEventListener("click",e=>{if(e.target.id==="modal")$("#modal").classList.remove("open")});
+$("#modalPrimary").onclick=()=>$("#modal").classList.remove("open");
 
 
 function loadDemo(){
@@ -611,7 +605,7 @@ $("#signInTab").onclick=()=>showAuth("signin");
 $("#signUpTab").onclick=()=>showAuth("signup");
 $("#demoBtn").onclick=loadDemo;
 $("#authForm").addEventListener("submit",handleAuthSubmit);
-$("#logout").onclick=async()=>{await supabase.auth.signOut();toast("Signed out","Your MULTIWORK AI session has been securely closed.")};
+$("#logout")?.addEventListener("click",async()=>{await supabase.auth.signOut();toast("Signed out","Your MULTIWORK AI session has been securely closed.")});
 init();
 </script>
 </body></html>
