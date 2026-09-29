@@ -4,7 +4,7 @@
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>MULTIWORK AI — Your work. Smarter.</title><meta name="theme-color" content="#080d17"><link rel="icon" type="image/svg+xml" href="assets/multiwork-mark.svg">
 <meta name="description" content="MULTIWORK AI — an intelligent command center for your work, priorities, people and schedule.">
-<meta name="color-scheme" content="dark"><meta name="multiwork-build" content="2026-09-29-contextual-permissions-v2">
+<meta name="color-scheme" content="dark"><meta name="multiwork-build" content="2026-09-29-contextual-permissions-v3">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
 <style>
@@ -519,10 +519,17 @@ function requestCapability(capability,request=""){
   const label=capabilityLabel(cap);
   const resume=String(request||"").trim();
   if(resume)sessionStorage.setItem("multiwork_pending_action",JSON.stringify({request:resume,capability:cap,createdAt:Date.now()}));
+  const requested=cap==="gmail"
+    ? "<span>• Gmail: read message metadata for context</span>"
+    : cap==="calendar"
+      ? "<span>• Calendar: read upcoming events</span>"
+      : cap==="contacts"
+        ? "<span>• Contacts: read saved people</span>"
+        : "<span>• Google Calendar: read upcoming events</span><span>• Google Contacts: read saved people</span><span>• Gmail: read message metadata for context</span>";
   const body='<div style="color:#aeb8c9;font-size:12px;line-height:1.7">'+
     '<p style="margin-top:0"><b style="color:#fff">I need '+escapeHtml(label)+' permission</b></p>'+
     '<p>You asked MULTIWORK to use a connected service. Approve the access below and I’ll continue the request automatically.</p>'+
-    '<div style="display:grid;gap:8px;margin-top:12px"><span>• Calendar: read upcoming events</span><span>• Contacts: read saved people</span><span>• Gmail: read message metadata for context</span></div>'+
+    '<div style="display:grid;gap:8px;margin-top:12px">'+requested+'</div>'+
     '<p style="margin-bottom:0;color:#7587a2">Google controls the actual permission screen. You can disconnect it later.</p></div>';
   showModal("Permission required","One approval unlocks this command and future commands that need the same source.",body,"Allow & continue");
   $("#modalPrimary").onclick=async()=>{
@@ -886,7 +893,7 @@ async function askAI(raw,target,options={}){
   }
 }
 
-function commandAnswer(raw,target,options={}){
+async function commandAnswer(raw,target,options={}){
   const q=raw.trim().toLowerCase();
   if(!q){toast("Ask MULTI","Tell me what you need.");return}
   const voice=!!options?.voice;
@@ -1014,8 +1021,11 @@ function commandAnswer(raw,target,options={}){
     toast("Next meeting",reply);if(voice)speakAssistant(reply);return;
   }
   let title="MULTIWORK AI",msg="I can act on your workspace data now.";
-  if(needsGoogle && googleConnected() && /\b(read|check|show|what|who|when|find|search|summarize|latest|today|tomorrow|upcoming)\b/i.test(q)){
-    syncGoogle({silent:true}).catch(()=>{});
+  if(needsGoogle && googleConnected() && /\b(read|check|show|what|who|when|find|search|summarize|latest|today|tomorrow|upcoming)\b/i.test(q) && !options.contextRefreshed){
+    const refreshed=await syncGoogle({silent:true});
+    if(refreshed){
+      return commandAnswer(raw,target,{...options,contextRefreshed:true});
+    }
   }
   if(q.startsWith("remind me to ")||q.startsWith("remember to ")){
   const title=raw.replace(/^remind me to |^remember to /i,"").trim();
