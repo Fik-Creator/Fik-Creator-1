@@ -120,6 +120,7 @@ button{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
     <form id="authForm" style="min-height:330px">
       <div class="field"><label>EMAIL</label><input id="authEmail" type="email" autocomplete="email" placeholder="you@company.com" required></div>
       <div class="field"><label>PASSWORD</label><input id="authPassword" type="password" autocomplete="current-password" placeholder="••••••••" minlength="8" required></div>
+      <div style="display:flex;justify-content:flex-end;margin:-7px 0 12px"><button class="link" id="forgotPassword" type="button">Forgot password?</button></div>
       <div class="field hidden" id="nameField"><label>FULL NAME</label><input id="authName" type="text" autocomplete="name" placeholder="Your full name"></div>
       <button class="authAction" id="authSubmit" type="submit">Sign in</button>
       <div class="authSecurityNote"><span>✓</span><div><b>Google is optional</b><small>Connect Google only when you choose to import calendar, contacts or email context.</small></div></div>
@@ -1666,6 +1667,23 @@ function loadDemo(){
 $("#signInTab").onclick=()=>showAuth("signin");
 $("#signUpTab").onclick=()=>showAuth("signup");
 $("#demoBtn").onclick=loadDemo;
+async function handleForgotPassword(){
+  const email=$("#authEmail").value.trim();
+  if(!email){setMessage("error","Enter your email first, then choose Forgot password.");$("#authEmail").focus();return}
+  const b=$("#forgotPassword");b.disabled=true;b.textContent="Sending…";setMessage("","");
+  try{
+    const {error}=await withTimeout(supabase.auth.resetPasswordForEmail(email,{redirectTo:window.location.origin+window.location.pathname}),20000);
+    if(error)throw error;
+    setMessage("success","Password reset instructions have been sent if this email is registered. Check your inbox.");
+    toast("Reset email sent","Check your inbox for the password reset link.");
+  }catch(err){
+    const msg=String(err?.message||"Could not send the reset email.");
+    setMessage("error",/rate limit|too many requests/i.test(msg)?"Too many reset requests right now. Wait a moment and try again.":msg);
+  }finally{
+    b.disabled=false;b.textContent="Forgot password?";
+  }
+}
+$("#forgotPassword")?.addEventListener("click",handleForgotPassword);
 $("#authForm").addEventListener("submit",handleAuthSubmit);
 $("#logout")?.addEventListener("click",async()=>{await supabase.auth.signOut();toast("Signed out","Your MULTIWORK AI session has been securely closed.")});
 init();
