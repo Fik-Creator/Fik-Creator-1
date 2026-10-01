@@ -276,23 +276,36 @@ function consumeVoiceIntent(){
   else {$("#command").value=voice;commandAnswer(voice,"command",{voice:true});}
 }
 async function initAuth(){
-  // Never block the executive shell on network/database hydration.
+  // Register the auth listener immediately so a fast user action cannot race getSession().
+  // Keep all follow-up Supabase work outside the auth callback to avoid auth-lock deadlocks.
+  supabase.auth.onAuthStateChange((event,session)=>{
+    captureProviderToken(session);
+    if(event==="SIGNED_IN"&&session?.user){
+      state.user={id:session.user.id,email:session.user.email||"",name:session.user.user_metadata?.full_name||session.user.email?.split("@")[0]||"Executive"};
+      showApp();renderAll();
+      consumeVoiceIntent();
+      setTimeout(()=>{
+        loadWorkspace().then(()=>resumePendingAction()).catch(err=>{
+          console.error("Auth state workspace load:",err);
+          toast("Workspace syncing",err.message||"Some data will appear shortly.");
+          resumePendingAction().catch(()=>{});
+        });
+      },0);
+    }else if(event==="SIGNED_OUT"){
+      state.user=null;state.profile=null;state.tasks=[];state.events=[];state.contacts=[];state.external=[];state.notes=[];state.integrations=[];state.googleToken=null;state.googleRefreshToken=null;state.googleConnected=false;
+      showAuth("signin");
+    }
+  });
+
   showAuth("signin");
   hideLoading();
-  const sessionPromise=withTimeout(supabase.auth.getSession(),1800);
   try{
-    const {data:{session}}=await sessionPromise;
+    const {data:{session}}=await withTimeout(supabase.auth.getSession(),1800);
     captureProviderToken(session);
     if(session?.user){
       state.user={id:session.user.id,email:session.user.email||"",name:session.user.user_metadata?.full_name||session.user.email?.split("@")[0]||"Executive"};
-      showApp();
-      renderAll();
-      consumeVoiceIntent();
-      withTimeout(loadWorkspace(),12000).then(()=>resumePendingAction()).catch(err=>{
-        console.error("MULTIWORK workspace load:",err);
-        toast("Workspace syncing",err.message||"Some data will appear shortly.");
-        resumePendingAction().catch(()=>{});
-      });
+      showApp();renderAll();consumeVoiceIntent();
+      setTimeout(()=>loadWorkspace().catch(err=>console.error("Initial workspace load:",err)),0);
     }else{
       showAuth("signin");
     }
@@ -300,28 +313,7 @@ async function initAuth(){
     console.error("MULTIWORK auth initialization:",err);
     showAuth("signin");
   }
-supabase.auth.onAuthStateChange((event,session)=>{
-    captureProviderToken(session);
-    if(event==="SIGNED_IN"&&session?.user){
-      state.user={id:session.user.id,email:session.user.email||"",name:session.user.user_metadata?.full_name||session.user.email?.split("@")[0]||"Executive"};
-      showApp();renderAll();
-      consumeVoiceIntent();
-      // IMPORTANT: never make Supabase calls synchronously inside onAuthStateChange.
-      // supabase-js can deadlock subsequent auth calls when the callback starts another
-      // Supabase request before the auth event has finished propagating.
-      setTimeout(()=>{
-        loadWorkspace().then(()=>resumePendingAction()).catch(err=>{
-          console.error("Auth state workspace load:",err);
-          resumePendingAction().catch(()=>{});
-        });
-      },0);
-    }
-    if(event==="SIGNED_OUT"){
-      state.user=null;state.profile=null;state.tasks=[];state.events=[];state.contacts=[];state.external=[];state.notes=[];state.integrations=[];state.googleToken=null;state.googleRefreshToken=null;state.googleConnected=false;
-      showAuth("signin");
-    }
-  });
-    if("serviceWorker" in navigator) navigator.serviceWorker.register("/sw.js").catch(()=>{});
+  if("serviceWorker" in navigator) navigator.serviceWorker.register("/sw.js").catch(()=>{});
 }
 
 function captureProviderToken(session){
