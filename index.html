@@ -4,7 +4,7 @@
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>MULTIWORK AI — Your work. Smarter.</title><meta name="theme-color" content="#080d17"><link rel="icon" type="image/svg+xml" href="assets/multiwork-mark.svg">
 <meta name="description" content="MULTIWORK AI — an intelligent command center for your work, priorities, people and schedule.">
-<meta name="color-scheme" content="dark"><meta name="multiwork-build" content="2026-09-30-auth-button-runtime-fix-v2">
+<meta name="color-scheme" content="dark"><meta name="multiwork-build" content="2026-10-01-auth-voice-stability-v3">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
 <style>
@@ -305,7 +305,15 @@ supabase.auth.onAuthStateChange((event,session)=>{
       state.user={id:session.user.id,email:session.user.email||"",name:session.user.user_metadata?.full_name||session.user.email?.split("@")[0]||"Executive"};
       showApp();renderAll();
       consumeVoiceIntent();
-      loadWorkspace().then(()=>resumePendingAction()).catch(err=>{console.error("Auth state workspace load:",err);resumePendingAction().catch(()=>{});});
+      // IMPORTANT: never make Supabase calls synchronously inside onAuthStateChange.
+      // supabase-js can deadlock subsequent auth calls when the callback starts another
+      // Supabase request before the auth event has finished propagating.
+      setTimeout(()=>{
+        loadWorkspace().then(()=>resumePendingAction()).catch(err=>{
+          console.error("Auth state workspace load:",err);
+          resumePendingAction().catch(()=>{});
+        });
+      },0);
     }
     if(event==="SIGNED_OUT"){
       state.user=null;state.profile=null;state.tasks=[];state.events=[];state.contacts=[];state.external=[];state.notes=[];state.integrations=[];state.googleToken=null;state.googleRefreshToken=null;state.googleConnected=false;
@@ -490,9 +498,10 @@ async function handleDialogue(raw,tone){
   }
   return false;
 }
-function voiceHandleUtterance(raw){
+async function voiceHandleUtterance(raw){
   const spoken=stripWakePrefix(raw);
-  if(!spoken||Date.now()<state.voiceIgnoreUntil)return;
+  if(!spoken||Date.now()<state.voiceIgnoreUntil||state.voiceBusy)return;
+  state.voiceBusy=true;
   const tone=detectVoiceTone(spoken);
   state.conversationHistory.push({speaker:"user",text:spoken,tone,at:new Date().toISOString()});
   if(state.conversationHistory.length>20)state.conversationHistory.shift();
@@ -500,16 +509,23 @@ function voiceHandleUtterance(raw){
     speakAssistant("Okay. I’m stopping voice listening.",()=>stopVoiceCommand(true));
     return;
   }
-  handleDialogue(spoken,tone).then(done=>{
-    if(done)return;
-    $("#command").value=spoken;
-    commandAnswer(spoken,"command",{voice:true,voiceSession:state.voiceSession,voiceTone:tone});
-  }).catch(()=>commandAnswer(spoken,"command",{voice:true,voiceSession:state.voiceSession,voiceTone:tone}));
+  try{
+    const done=await handleDialogue(spoken,tone);
+    if(!done){
+      $("#command").value=spoken;
+      await commandAnswer(spoken,"command",{voice:true,voiceSession:state.voiceSession,voiceTone:tone});
+    }
+  }catch(err){
+    console.error("MULTIWORK voice command:",err);
+    speakColleague("I couldn't complete that command. Please try again.",tone);
+  }finally{
+    state.voiceBusy=false;
+  }
 }
 function startVoiceCommand(fromWake=false,announce=true,session=true){
   const SpeechRecognition=getSpeechRecognition();
-  if(!SpeechRecognition){toast("Voice unavailable",isIOSLike()?"On iPhone/iPad, use Safari and make sure Siri & Dictation are enabled.":"Speech recognition is not available in this browser. Use MULTIWORK Mobile for deeper device-level voice controls.");return}
-  if(state.voiceListening)return;
+  if(!SpeechRecognition){toast("Voice unavailable",isIOSLike()?"On iPhone/iPad, use Safari and make sure Siri & Dictation are enabled.":"Speech recognition is not available in this browser. Use a browser with Web Speech recognition enabled.");return}
+  if(state.voiceListening||state.voiceBusy)return;
   stopWakeWord(true);
   state.voiceSession=session;
   state.voiceStopping=false;
@@ -1521,20 +1537,58 @@ async function handleAuthSubmit(e){
   if(!email||!password){setMessage("error","Enter your email and password.");return}
   if(password.length<8){setMessage("error","Use at least 8 characters.");return}
   if(signup&&!name){setMessage("error","Enter your full name.");return}
-  const b=$("#authSubmit");b.disabled=true;b.textContent=signup?"Creating…":"Signing in…";setMessage("","");
+
+  const b=$("#authSubmit");
+  b.disabled=true;
+  b.textContent=signup?"Creating account…":"Signing in…";
+  setMessage("","");
+
   try{
     const result=signup
-      ?await withTimeout(supabase.auth.signUp({email,password,options:{data:{full_name:name},emailRedirectTo:window.location.origin+window.location.pathname}}),15000)
-      :await withTimeout(supabase.auth.signInWithPassword({email,password}),15000);
-    if(result.error)throw result.error;
-    if(result.data?.session&&result.data?.user){
-      state.user={id:result.data.user.id,email:result.data.user.email||email,name:signup?name:(result.data.user.user_metadata?.full_name||email.split("@")[0])};
-      showApp();renderAll();b.disabled=false;b.textContent=signup?"Create account":"Sign in";loadWorkspace().catch(()=>{});toast(signup?"Welcome":"Welcome back","Your executive workspace is ready.");return;
+      ?await withTimeout(supabase.auth.signUp({
+          email,
+          password,
+          options:{data:{full_name:name},emailRedirectTo:window.location.origin+window.location.pathname}
+        }),20000)
+      :await withTimeout(supabase.auth.signInWithPassword({email,password}),20000);
+
+    if(result?.error)throw result.error;
+
+    const user=result?.data?.user;
+    const session=result?.data?.session;
+
+    if(user&&session){
+      state.user={
+        id:user.id,
+        email:user.email||email,
+        name:signup?name:(user.user_metadata?.full_name||email.split("@")[0])
+      };
+      // Render immediately from the confirmed auth response. Workspace hydration is deferred
+      // so it cannot block the auth transaction.
+      showApp();
+      renderAll();
+      b.disabled=false;
+      b.textContent=signup?"Create account":"Sign in";
+      toast(signup?"Account created":"Signed in","Your MULTIWORK executive workspace is ready.");
+      setTimeout(()=>loadWorkspace().catch(err=>console.error("Post-auth workspace load:",err)),0);
+      return;
     }
-    if(signup&&result.data?.user&&!result.data.session){showAuth("signin");setMessage("success","Account created. Check your email if confirmation is required, then sign in.");return}
-    throw new Error("No session was returned. Please try again.");
+
+    if(signup&&user&&!session){
+      // Supabase returns this state when Confirm Email is enabled: the account exists,
+      // but the user must verify the address before a session can be issued.
+      b.disabled=false;
+      b.textContent="Create account";
+      showAuth("signin");
+      setMessage("success","Account created successfully. Check your email to confirm your account, then sign in.");
+      toast("Account created","Check your email to finish setup.");
+      return;
+    }
+
+    throw new Error("MULTIWORK could not establish a session. Please try again.");
   }catch(err){
-    b.disabled=false;b.textContent=signup?"Create account":"Sign in";
+    b.disabled=false;
+    b.textContent=signup?"Create account":"Sign in";
     const msg=String(err?.message||"Authentication failed. Please try again.");
     const lower=msg.toLowerCase();
     const friendly=/invalid login credentials/.test(lower)
@@ -1543,6 +1597,10 @@ async function handleAuthSubmit(e){
       ?"Your email is not confirmed yet. Check your inbox, then sign in again."
       :/user already registered|already registered/.test(lower)
       ?"An account already exists with this email. Switch to Sign in."
+      :/signups? not allowed|signup.*disabled/.test(lower)
+      ?"New account creation is currently disabled. Please try again later."
+      :/rate limit|too many requests/.test(lower)
+      ?"Too many attempts right now. Wait a moment and try again."
       :/password.*(weak|at least)|weak password/.test(lower)
       ?"Use a stronger password with at least 8 characters."
       :/network|fetch|timeout|failed to fetch/.test(lower)
