@@ -869,78 +869,7 @@ async function testAI(){
   }catch(err){toast("AI not connected",err.message)}
 }
 
-async function handleAuthSubmit(e){
-  e.preventDefault();
-  const email=$("#authEmail").value.trim(),password=$("#authPassword").value;
-  const signup=!$("#nameField").classList.contains("hidden"),name=$("#authName").value.trim();
-  if(!email||!password){setMessage("error","Enter your email and password.");return}
-  if(password.length<8){setMessage("error","Use a password with at least 8 characters.");return}
-  if(signup&&!name){setMessage("error","Enter your full name.");return}
-
-  const button=$("#authSubmit");
-  button.disabled=true;
-  button.textContent=signup?"Creating…":"Signing in…";
-  setMessage("","");
-
-  let completed=false;
-  const finish=async(data)=>{
-    if(completed)return;
-    completed=true;
-    button.disabled=false;
-    button.textContent=signup?"Create account":"Sign in";
-    if(data?.error)throw data.error;
-    const user=data?.data?.user,session=data?.data?.session;
-    if(session&&user){
-      state.user={id:user.id,email:user.email||email,name:signup?name:(user.user_metadata?.full_name||email.split("@")[0])};
-      showApp();renderAll();
-      loadWorkspace().catch(err=>{console.error(err);toast("Workspace syncing","Your dashboard is open while data finishes loading.")});
-      toast(signup?"Welcome to MULTIWORK AI":"Welcome back","Your executive workspace is ready.");
-      return;
-    }
-    if(signup&&user){
-      const retry=await withTimeout(supabase.auth.signInWithPassword({email,password}),FAST_ACTION_MS).catch(error=>({error}));
-      if(retry?.data?.session&&retry?.data?.user){
-        state.user={id:retry.data.user.id,email:retry.data.user.email||email,name};
-        showApp();renderAll();loadWorkspace().catch(()=>{});
-        toast("Welcome to MULTIWORK AI","Your executive workspace is ready.");
-      }else if(String(retry?.error?.message||"").toLowerCase().includes("email not confirmed")){
-        showAuth("signin");
-        setMessage("success","Account created. Confirm your email, then sign in.");
-      }else if(retry?.error){
-        setMessage("error",retry.error.message||"Account created. Sign in again to continue.");
-      }
-    }
-  };
-
-  const work=signup
-    ? supabase.auth.signUp({email,password,options:{data:{full_name:name}}})
-    : supabase.auth.signInWithPassword({email,password});
-
-  work.then(result=>finish({data:result})).catch(error=>{
-    if(completed)return;
-    completed=true;
-    button.disabled=false;
-    button.textContent=signup?"Create account":"Sign in";
-    const msg=String(error?.message||"Authentication failed. Please try again.");
-    const friendly=/rate limit/i.test(msg)?"Too many attempts right now. Try again shortly."
-      :/already registered/i.test(msg)?"An account with this email already exists. Switch to Sign in."
-      :/password/i.test(msg)?"Use a stronger password with at least 8 characters."
-      :/network|fetch|timeout/i.test(msg)?"The connection is slow. Please try again."
-      :msg;
-    setMessage("error",friendly);
-  });
-
-  setTimeout(()=>{
-    if(completed)return;
-    completed=true;
-    button.disabled=false;
-    button.textContent=signup?"Create account":"Sign in";
-    setMessage("success",signup
-      ?"Your account request is still processing in the background. You can continue once Supabase finishes."
-      :"Your sign-in request is taking longer than expected. Try again in a moment.");
-  },FAST_ACTION_MS);
-}
-async async function init(){
+async function init(){
   try{await initAuth();}
   catch(err){
     console.error("MULTIWORK initialization error:",err);
